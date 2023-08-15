@@ -1,0 +1,3 @@
+/home/hoseinknazari/Desktop/TUNC/FF/CMakeFiles/runner.out.dir
+/home/hoseinknazari/Desktop/TUNC/FF/CMakeFiles/edit_cache.dir
+/home/hoseinknazari/Desktop/TUNC/FF/CMakeFiles/rebuild_cache.dir
