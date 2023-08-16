@@ -9,7 +9,6 @@ uint8_t ff::mutiply(uint8_t a, uint8_t b)
 
 uint8_t ff::add(uint8_t a, uint8_t b)
 {
-    
 
     int module = -1;
 
@@ -46,7 +45,7 @@ uint8_t ff::mutiplicationInverse(uint8_t a)
     {
         auto it = std::find(ff256[a].begin(), ff256[a].end(), 1);
 
-        // if there is a one inside that row at all 
+        // if there is a one inside that row at all
         if (it != ff256[a].end())
         {
             index = std::distance(ff256[a].begin(), it);
@@ -62,13 +61,18 @@ uint8_t ff::additionInverse(uint8_t a)
 //  a is divided by b
 uint8_t ff::division(uint8_t a, uint8_t b)
 {
-    uint8_t bInverse= this->mutiplicationInverse(b);
-    uint8_t result = this->mutiply(a,bInverse);
+    uint8_t bInverse = this->mutiplicationInverse(b);
+    uint8_t result = this->mutiply(a, bInverse);
     return result;
 };
 uint8_t ff::subtraction(uint8_t a, uint8_t b)
 {
-    return a;
+    uint8_t answer = -1;
+    if (this->fieldSize == BinaryC)
+    {
+        answer = a ^ b;
+    }
+    return answer;
 };
 std::vector<uint8_t> ff::v2vMulipllication(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
@@ -80,6 +84,7 @@ std::vector<uint8_t> ff::v2vAddition(std::vector<uint8_t> a, std::vector<uint8_t
 };
 std::vector<uint8_t> ff::v2vSubtraction(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
+
     return a;
 };
 std::vector<uint8_t> ff::s2vMultiplication(uint8_t a, std::vector<uint8_t> b)
