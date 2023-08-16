@@ -1,4 +1,4 @@
-# Install script for directory: /home/hoseinknazari/Desktop/TUNC/FF
+# Install script for directory: /home/hoseinknazari/Desktop/TUNC
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/hoseinknazari/Desktop/TUNC/FF/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/hoseinknazari/Desktop/TUNC/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

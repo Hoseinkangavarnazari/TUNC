@@ -1,7 +1,7 @@
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.o: \
- /home/hoseinknazari/Desktop/TUNC/FF/headers/src/ff.cpp \
+ /home/hoseinknazari/Desktop/TUNC/headers/src/ff.cpp \
  /usr/include/stdc-predef.h \
- /home/hoseinknazari/Desktop/TUNC/FF/headers/src/../ff.h \
+ /home/hoseinknazari/Desktop/TUNC/headers/src/../ff.h \
  /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \

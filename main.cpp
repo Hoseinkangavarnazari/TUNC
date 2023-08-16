@@ -7,7 +7,7 @@ int main()
     std::cout << "Hello World!\n";
     
     ff f1;
-    uint8_t f22 = f1.mutiply(12, 1);
+    uint8_t f22 = f1.add(12, 1);
 
     std::cout<<"value: "<<int(f22)<<std::endl;
 

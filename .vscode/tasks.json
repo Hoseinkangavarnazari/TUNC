@@ -5,10 +5,11 @@
             "label": "C/C++: g++ build active file",
             "command": "/usr/bin/g++",
             "args": [
-                "${fileDirname}/headers/src/*.cpp",
-                "${file}",
+                "-g",
+                "/home/hoseinknazari/Desktop/TUNC/headers/src/*.cpp",
+                "/home/hoseinknazari/Desktop/TUNC/main.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "/home/hoseinknazari/Desktop/TUNC/runner.out"
             ],
             "options": {
                 "cwd": "/usr/bin"

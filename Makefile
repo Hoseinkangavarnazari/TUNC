@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hoseinknazari/Desktop/TUNC/FF
+CMAKE_SOURCE_DIR = /home/hoseinknazari/Desktop/TUNC
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hoseinknazari/Desktop/TUNC/FF
+CMAKE_BINARY_DIR = /home/hoseinknazari/Desktop/TUNC
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/FF/CMakeFiles /home/hoseinknazari/Desktop/TUNC/FF//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/CMakeFiles /home/hoseinknazari/Desktop/TUNC//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/FF/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -153,6 +153,54 @@ headers/src/ff.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/ff.cpp.s
 .PHONY : headers/src/ff.cpp.s
 
+headers/src/rlnc_decoder.o: headers/src/rlnc_decoder.cpp.o
+.PHONY : headers/src/rlnc_decoder.o
+
+# target to build an object file
+headers/src/rlnc_decoder.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o
+.PHONY : headers/src/rlnc_decoder.cpp.o
+
+headers/src/rlnc_decoder.i: headers/src/rlnc_decoder.cpp.i
+.PHONY : headers/src/rlnc_decoder.i
+
+# target to preprocess a source file
+headers/src/rlnc_decoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i
+.PHONY : headers/src/rlnc_decoder.cpp.i
+
+headers/src/rlnc_decoder.s: headers/src/rlnc_decoder.cpp.s
+.PHONY : headers/src/rlnc_decoder.s
+
+# target to generate assembly for a file
+headers/src/rlnc_decoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s
+.PHONY : headers/src/rlnc_decoder.cpp.s
+
+headers/src/rlnc_encoder.o: headers/src/rlnc_encoder.cpp.o
+.PHONY : headers/src/rlnc_encoder.o
+
+# target to build an object file
+headers/src/rlnc_encoder.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o
+.PHONY : headers/src/rlnc_encoder.cpp.o
+
+headers/src/rlnc_encoder.i: headers/src/rlnc_encoder.cpp.i
+.PHONY : headers/src/rlnc_encoder.i
+
+# target to preprocess a source file
+headers/src/rlnc_encoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i
+.PHONY : headers/src/rlnc_encoder.cpp.i
+
+headers/src/rlnc_encoder.s: headers/src/rlnc_encoder.cpp.s
+.PHONY : headers/src/rlnc_encoder.s
+
+# target to generate assembly for a file
+headers/src/rlnc_encoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s
+.PHONY : headers/src/rlnc_encoder.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -189,6 +237,12 @@ help:
 	@echo "... headers/src/ff.o"
 	@echo "... headers/src/ff.i"
 	@echo "... headers/src/ff.s"
+	@echo "... headers/src/rlnc_decoder.o"
+	@echo "... headers/src/rlnc_decoder.i"
+	@echo "... headers/src/rlnc_decoder.s"
+	@echo "... headers/src/rlnc_encoder.o"
+	@echo "... headers/src/rlnc_encoder.i"
+	@echo "... headers/src/rlnc_encoder.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

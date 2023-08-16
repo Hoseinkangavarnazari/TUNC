@@ -195,6 +195,12 @@ CMakeFiles/runner.out.dir/headers/src/ff.cpp.o: headers/src/ff.cpp \
   /usr/include/c++/11/sstream \
   /usr/include/c++/11/bits/sstream.tcc
 
+CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: headers/src/rlnc_decoder.cpp \
+  /usr/include/stdc-predef.h
+
+CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: headers/src/rlnc_encoder.cpp \
+  /usr/include/stdc-predef.h
+
 CMakeFiles/runner.out.dir/main.cpp.o: main.cpp \
   /usr/include/stdc-predef.h \
   /usr/include/c++/11/iostream \
@@ -389,6 +395,10 @@ CMakeFiles/runner.out.dir/main.cpp.o: main.cpp \
   /usr/include/c++/11/sstream \
   /usr/include/c++/11/bits/sstream.tcc
 
+
+headers/src/rlnc_encoder.cpp:
+
+headers/src/rlnc_decoder.cpp:
 
 /usr/include/c++/11/sstream:
 
