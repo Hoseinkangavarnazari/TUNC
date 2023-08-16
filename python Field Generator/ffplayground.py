@@ -6,9 +6,9 @@ F = ffield.FField(8)
 #     print("i = ",i, " = ", F.Divide(10,i))
 
 
-a = [11, 12, 3, 43 ]
-b = [51, 61, 23, 8 ]
+a = [110, 120, 30, 43 ]
+
     
 for i in range(0,4):
-    print("i = ",i, " = ", F.Subtract(a[i],b[i]))
+    print("i = ",i, " = ", F.Divide(a[i],255))
    

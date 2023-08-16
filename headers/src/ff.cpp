@@ -129,10 +129,27 @@ std::vector<uint8_t> ff::v2vSubtraction(std::vector<uint8_t> a, std::vector<uint
     }
     return answer;
 };
-std::vector<uint8_t> ff::s2vMultiplication(uint8_t a, std::vector<uint8_t> b)
+std::vector<uint8_t> ff::s2vMultiplication(std::vector<uint8_t> a, uint8_t b)
 {
-    return b;
+    std::vector<uint8_t> answer;
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        answer.push_back(this->mutiply(a[i],b));
+    }
+    return answer;
 };
+
+std::vector<uint8_t> ff::s2vDivision(std::vector<uint8_t> a, uint8_t b)
+{
+    std::vector<uint8_t> answer;
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        answer.push_back(this->division(a[i],b));
+    }
+    return answer;
+}
 
 ff::ff(int fieldSize)
 {

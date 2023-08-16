@@ -9,8 +9,11 @@ int main()
 
     ff ff(256);
 
-    std::vector<uint8_t> a = { 11, 12, 3, 43 };
-    std::vector<uint8_t> b = { 51, 61, 23, 8 };
-    std::vector<uint8_t> c = ff.v2vSubtraction(a, b);
+    std::vector<uint8_t> a = {110, 120, 30, 43};
+
+    uint8_t b = 255;
+
+    std::vector<uint8_t> c = ff.s2vDivision(a, b);
+
     return 0;
 }
