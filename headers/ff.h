@@ -24,6 +24,8 @@ public:
     
     // Each of these will contain the finite field tables 
     std::vector<std::vector<uint8_t>> ff256;
+
+    // @TODO: AKIF
     std::vector<std::vector<uint8_t>> ff7;
     std::vector<std::vector<uint8_t>> ff2;
 
