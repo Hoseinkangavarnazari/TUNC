@@ -20,7 +20,7 @@ private:
     FieldSize fieldSize;
 
 public:
-    ff();
+    ff(int fieldSize);
     
     // Each of these will contain the finite field tables 
     std::vector<std::vector<uint8_t>> ff256;

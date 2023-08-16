@@ -1,13 +1,14 @@
 #include <iostream>
 #include "headers/ff.h"
 #include <vector>
+#include <stdlib.h>
 
 int main()
 {
     std::cout << "Hello World!\n";
     
-    ff f1;
-    uint8_t f22 = f1.add(12, 1);
+    ff f1(256);
+    uint8_t f22 = f1.add(12, 3);
 
     std::cout<<"value: "<<int(f22)<<std::endl;
 

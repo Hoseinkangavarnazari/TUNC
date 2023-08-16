@@ -7,55 +7,69 @@ uint8_t ff::mutiply(uint8_t a, uint8_t b)
 
 uint8_t ff::add(uint8_t a, uint8_t b)
 {
-    std::cout << "add works!" << std::endl;
-    return a + b % 256;
+    std::cout << "add Endpoint hit" << std::endl;
+
+    int module = -1;
+
+    switch (this->fieldSize)
+    {
+    case BinaryA:
+        module = 2;
+        break;
+
+    case BinaryB:
+        module = 8;
+        break;
+
+    case BinaryC:
+        module = 256;
+        break;
+
+    default:
+        return EXIT_FAILURE;
+        break;
+    }
+
+    return a + b % module;
 }
 
-uint8_t add(uint8_t a, uint8_t b)
+uint8_t ff::mutiplicationInverse(uint8_t a)
 {
     return a;
 };
-
-uint8_t mutiply(uint8_t a, uint8_t b)
+uint8_t ff::additionInverse(uint8_t a)
 {
     return a;
 };
-
-uint8_t mutiplicationInverse(uint8_t a)
+uint8_t ff::division(uint8_t a, uint8_t b)
 {
     return a;
 };
-uint8_t additionInverse(uint8_t a)
+uint8_t ff::subtraction(uint8_t a, uint8_t b)
 {
     return a;
 };
-uint8_t division(uint8_t a, uint8_t b)
+std::vector<uint8_t> ff::v2vMulipllication(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
     return a;
 };
-uint8_t subtraction(uint8_t a, uint8_t b)
+std::vector<uint8_t> ff::v2vAddition(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
     return a;
 };
-std::vector<uint8_t> v2vMulipllication(std::vector<uint8_t> a, std::vector<uint8_t> b)
+std::vector<uint8_t> ff::v2vSubtraction(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
     return a;
 };
-std::vector<uint8_t> v2vAddition(std::vector<uint8_t> a, std::vector<uint8_t> b)
-{
-    return a;
-};
-std::vector<uint8_t> v2vSubtraction(std::vector<uint8_t> a, std::vector<uint8_t> b)
-{
-    return a;
-};
-std::vector<uint8_t> s2vMultiplication(uint8_t a, std::vector<uint8_t> b)
+std::vector<uint8_t> ff::s2vMultiplication(uint8_t a, std::vector<uint8_t> b)
 {
     return b;
 };
 
-ff::ff()
+ff::ff(int fieldSize)
 {
+
+    // fill out the tables for fields from files
     std::ifstream inputFile("result.txt");
 
     if (!inputFile.is_open())
@@ -82,5 +96,23 @@ ff::ff()
         ff256.push_back(ff256_row);
     }
 
-    std::cout << "generateTable works!" << std::endl;
+    // ...........................................
+
+    if (fieldSize == 2)
+    {
+        this->fieldSize = BinaryA;
+    }
+    else if (fieldSize == 8)
+    {
+        this->fieldSize = BinaryB;
+    }
+    else if (fieldSize == 256)
+    {
+        this->fieldSize = BinaryC;
+    }
+    else
+    {
+    std::cerr << "FATAL system error: Invalid field size" << std::endl;
+       exit(EXIT_FAILURE);
+    }
 };
