@@ -14,11 +14,14 @@ int main()
 
     std::cout << "value: " << int(f22) << std::endl;
 
+    // for (int i = 1; i < 256; i++)
+    // {
+    //     std::cout << "i = " << i << " = " << int(f1.division(10, uint8_t(i))) << std::endl;
+    // }
     for (int i = 1; i < 256; i++)
     {
-        std::cout << "i = " << i << " = " << int(f1.division(10, uint8_t(i))) << std::endl;
+        std::cout << "i = " << i << " = " << int(f1.add(10, uint8_t(i))) << std::endl;
     }
-
     // std::vector<uint8_t> v1 = {1,2,3,4,5,6,7,8,9,10};
     // uint8_t a2= 12;
 

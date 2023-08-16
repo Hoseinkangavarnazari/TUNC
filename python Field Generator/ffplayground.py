@@ -2,6 +2,9 @@ from pyfinite import ffield
 
 F = ffield.FField(8)
 
+# for i in range(1,256):
+#     print("i = ",i, " = ", F.Divide(10,i))
+    
 for i in range(1,256):
-    print("i = ",i, " = ", F.Divide(10,i))
+    print("i = ",i, " = ", F.Add(10,i))
    
