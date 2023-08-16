@@ -76,16 +76,58 @@ uint8_t ff::subtraction(uint8_t a, uint8_t b)
 };
 std::vector<uint8_t> ff::v2vMulipllication(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
-    return a;
+    std::vector<uint8_t> answer;
+
+    if (a.size() != b.size())
+    {
+        std::cerr << "FATAL system error: Invalid vector sizes" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        for (size_t i = 0; i < a.size(); i++)
+        {
+            answer.push_back(this->mutiply(a[i], b[i]));
+        }
+    }
+    return answer;
 };
 std::vector<uint8_t> ff::v2vAddition(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
-    return a;
+    std::vector<uint8_t> answer;
+
+    if (a.size() != b.size())
+    {
+        std::cerr << "FATAL system error: Invalid vector sizes" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        for (size_t i = 0; i < a.size(); i++)
+        {
+            answer.push_back(a[i] ^ b[i]);
+        }
+    }
+    return answer;
 };
 std::vector<uint8_t> ff::v2vSubtraction(std::vector<uint8_t> a, std::vector<uint8_t> b)
 {
 
-    return a;
+    std::vector<uint8_t> answer;
+
+    if (a.size() != b.size())
+    {
+        std::cerr << "FATAL system error: Invalid vector sizes" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        for (size_t i = 0; i < a.size(); i++)
+        {
+            answer.push_back(a[i] ^ b[i]);
+        }
+    }
+    return answer;
 };
 std::vector<uint8_t> ff::s2vMultiplication(uint8_t a, std::vector<uint8_t> b)
 {
