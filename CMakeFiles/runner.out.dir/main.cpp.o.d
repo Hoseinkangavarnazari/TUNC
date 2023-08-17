@@ -207,4 +207,8 @@ CMakeFiles/runner.out.dir/main.cpp.o: \
  /home/hoseinknazari/Desktop/TUNC/headers/cFunctions.h \
  /home/hoseinknazari/Desktop/TUNC/headers/ff.h \
  /usr/include/c++/11/sstream /usr/include/c++/11/bits/sstream.tcc \
- /home/hoseinknazari/Desktop/TUNC/headers/cFunctions.h
+ /home/hoseinknazari/Desktop/TUNC/headers/ff.h \
+ /home/hoseinknazari/Desktop/TUNC/headers/cFunctions.h \
+ /home/hoseinknazari/Desktop/TUNC/headers/packet.h \
+ /home/hoseinknazari/Desktop/TUNC/headers/rlnc_decoder.h \
+ /home/hoseinknazari/Desktop/TUNC/headers/packet.h

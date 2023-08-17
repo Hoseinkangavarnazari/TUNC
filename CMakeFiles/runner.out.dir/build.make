@@ -97,10 +97,24 @@ CMakeFiles/runner.out.dir/headers/src/ff.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/ff.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/ff.cpp -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.s
 
+CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: headers/src/packet.cpp
+CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/runner.out.dir/headers/src/packet.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/packet.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp
+
+CMakeFiles/runner.out.dir/headers/src/packet.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/packet.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp > CMakeFiles/runner.out.dir/headers/src/packet.cpp.i
+
+CMakeFiles/runner.out.dir/headers/src/packet.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/packet.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.s
+
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: headers/src/rlnc_decoder.cpp
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_decoder.cpp
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i: cmake_force
@@ -114,7 +128,7 @@ CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s: cmake_force
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: headers/src/rlnc_encoder.cpp
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_encoder.cpp
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s: cmake_force
 CMakeFiles/runner.out.dir/main.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/main.cpp.o: main.cpp
 CMakeFiles/runner.out.dir/main.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/runner.out.dir/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/main.cpp.o -MF CMakeFiles/runner.out.dir/main.cpp.o.d -o CMakeFiles/runner.out.dir/main.cpp.o -c /home/hoseinknazari/Desktop/TUNC/main.cpp
 
 CMakeFiles/runner.out.dir/main.cpp.i: cmake_force
@@ -143,6 +157,7 @@ CMakeFiles/runner.out.dir/main.cpp.s: cmake_force
 runner_out_OBJECTS = \
 "CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/ff.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/packet.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o" \
 "CMakeFiles/runner.out.dir/main.cpp.o"
@@ -152,12 +167,13 @@ runner_out_EXTERNAL_OBJECTS =
 
 runner.out: CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/ff.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/packet.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o
 runner.out: CMakeFiles/runner.out.dir/main.cpp.o
 runner.out: CMakeFiles/runner.out.dir/build.make
 runner.out: CMakeFiles/runner.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable runner.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable runner.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/runner.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
