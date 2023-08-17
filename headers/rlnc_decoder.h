@@ -1,16 +1,11 @@
+#ifndef RLNC_ENCODER
+#define RLNC_ENCODER
+
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
-
-
-enum FieldSize
-{
-    BinaryA = 2,
-    BinaryB = 8,
-    BinaryC = 256,
-};
-
+#include "cFunctions.h"
 
 class rlnc_decoder
 {
@@ -33,3 +28,5 @@ class rlnc_decoder
     bool consume_codedSymbol(std::vector<uint8_t> coefficient, std::vector<uint8_t> consume_codedSymbol);
     bool consume_systematicSymbol( std::vector<uint8_t> consume_systematicSymbol);
 };
+
+#endif

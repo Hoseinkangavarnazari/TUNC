@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
+
 uint8_t ff::mutiply(uint8_t a, uint8_t b)
 {
     return ff256[a][b];

@@ -1,18 +1,16 @@
-#pragma once
+#ifndef FF_H
+#define FF_H
 
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
 #include <sstream>
+
+#include "cFunctions.h"
 // using namespace std;
 
-enum FieldSize
-{
-    BinaryA = 2,   // 0
-    BinaryB = 8,   // 1
-    BinaryC = 256, // 2
-};
+
 
 class ff
 {
@@ -38,6 +36,9 @@ public:
     std::vector<uint8_t> v2vMulipllication(std::vector<uint8_t> a, std::vector<uint8_t> b);
     std::vector<uint8_t> v2vAddition(std::vector<uint8_t> a, std::vector<uint8_t> b);
     std::vector<uint8_t> v2vSubtraction(std::vector<uint8_t> a, std::vector<uint8_t> b);
-    std::vector<uint8_t> s2vMultiplication(uint8_t a, std::vector<uint8_t> b);
+    std::vector<uint8_t> s2vMultiplication(std::vector<uint8_t> a, uint8_t b);
     std::vector<uint8_t> s2vDivision(std::vector<uint8_t> a, uint8_t b);
 };
+
+
+#endif

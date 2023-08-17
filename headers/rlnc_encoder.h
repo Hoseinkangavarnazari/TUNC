@@ -1,15 +1,11 @@
+#ifndef RLNC_DECODER
+#define RLNC_DECODER
 
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
-
-enum FieldSize
-{
-    Binary,  // 0
-    Binary8, // 1
-    Binary256
-};
+#include "cFunctions.h"
 
 class rlnc_encoder
 {
@@ -27,4 +23,8 @@ class rlnc_encoder
     std::vector<uint8_t> encode_systematic();
     std::vector<uint8_t> encode_rlnc(std::vector<uint8_t> coefficients);
     std::vector<uint8_t> returnSymbol();
+
+    void randomCoeffGenerator(std::vector<uint8_t> &vec);
 };
+
+#endif
