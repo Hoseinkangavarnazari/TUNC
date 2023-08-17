@@ -129,6 +129,30 @@ runner.out/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/build
 .PHONY : runner.out/fast
 
+headers/src/cFunctions.o: headers/src/cFunctions.cpp.o
+.PHONY : headers/src/cFunctions.o
+
+# target to build an object file
+headers/src/cFunctions.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o
+.PHONY : headers/src/cFunctions.cpp.o
+
+headers/src/cFunctions.i: headers/src/cFunctions.cpp.i
+.PHONY : headers/src/cFunctions.i
+
+# target to preprocess a source file
+headers/src/cFunctions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.i
+.PHONY : headers/src/cFunctions.cpp.i
+
+headers/src/cFunctions.s: headers/src/cFunctions.cpp.s
+.PHONY : headers/src/cFunctions.s
+
+# target to generate assembly for a file
+headers/src/cFunctions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.s
+.PHONY : headers/src/cFunctions.cpp.s
+
 headers/src/ff.o: headers/src/ff.cpp.o
 .PHONY : headers/src/ff.o
 
@@ -234,6 +258,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... runner.out"
+	@echo "... headers/src/cFunctions.o"
+	@echo "... headers/src/cFunctions.i"
+	@echo "... headers/src/cFunctions.s"
 	@echo "... headers/src/ff.o"
 	@echo "... headers/src/ff.i"
 	@echo "... headers/src/ff.s"
