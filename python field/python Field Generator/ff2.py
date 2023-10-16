@@ -10,7 +10,7 @@ with open(file_path, "w") as file:
             file.write(str(F.Multiply(i, j)) + "-")
         file.write("\n")
 
-        akif
+    
 
 
 
