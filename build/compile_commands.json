@@ -1,0 +1,52 @@
+[
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/cFunctions.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/cFunctions.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/ff.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/ff.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/hpacket.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/hpacket.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_decoder.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/rlnc_decoder.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_encoder.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/rlnc_encoder.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/sign_calculator.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/sign_calculator.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/main.cpp.o -c /home/akif/Documents/TUNC/TUNC/main.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/main.cpp"
+}
+]

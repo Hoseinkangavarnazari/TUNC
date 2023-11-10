@@ -6,10 +6,10 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-g",
-                "/home/hoseinknazari/Desktop/TUNC/headers/src/*.cpp",
-                "/home/hoseinknazari/Desktop/TUNC/main.cpp",
+                "/home/akif/Documents/TUNC/TUNC/headers/src/*.cpp",
+                "/home/akif/Documents/TUNC/TUNC/main.cpp",
                 "-o",
-                "/home/hoseinknazari/Desktop/TUNC/runner.out"
+                "/home/akif/Documents/TUNC/TUNC/runner.out"
             ],
             "options": {
                 "cwd": "/usr/bin"
