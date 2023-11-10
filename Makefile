@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hoseinknazari/Desktop/TUNC
+CMAKE_SOURCE_DIR = /home/akif/Documents/TUNC/TUNC
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hoseinknazari/Desktop/TUNC
+CMAKE_BINARY_DIR = /home/akif/Documents/TUNC/TUNC
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/CMakeFiles /home/hoseinknazari/Desktop/TUNC//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/akif/Documents/TUNC/TUNC/CMakeFiles /home/akif/Documents/TUNC/TUNC//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hoseinknazari/Desktop/TUNC/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/akif/Documents/TUNC/TUNC/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -177,6 +177,78 @@ headers/src/ff.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/ff.cpp.s
 .PHONY : headers/src/ff.cpp.s
 
+headers/src/hpacket.o: headers/src/hpacket.cpp.o
+.PHONY : headers/src/hpacket.o
+
+# target to build an object file
+headers/src/hpacket.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o
+.PHONY : headers/src/hpacket.cpp.o
+
+headers/src/hpacket.i: headers/src/hpacket.cpp.i
+.PHONY : headers/src/hpacket.i
+
+# target to preprocess a source file
+headers/src/hpacket.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.i
+.PHONY : headers/src/hpacket.cpp.i
+
+headers/src/hpacket.s: headers/src/hpacket.cpp.s
+.PHONY : headers/src/hpacket.s
+
+# target to generate assembly for a file
+headers/src/hpacket.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.s
+.PHONY : headers/src/hpacket.cpp.s
+
+headers/src/keygenerator.o: headers/src/keygenerator.cpp.o
+.PHONY : headers/src/keygenerator.o
+
+# target to build an object file
+headers/src/keygenerator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o
+.PHONY : headers/src/keygenerator.cpp.o
+
+headers/src/keygenerator.i: headers/src/keygenerator.cpp.i
+.PHONY : headers/src/keygenerator.i
+
+# target to preprocess a source file
+headers/src/keygenerator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.i
+.PHONY : headers/src/keygenerator.cpp.i
+
+headers/src/keygenerator.s: headers/src/keygenerator.cpp.s
+.PHONY : headers/src/keygenerator.s
+
+# target to generate assembly for a file
+headers/src/keygenerator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s
+.PHONY : headers/src/keygenerator.cpp.s
+
+headers/src/mac_calculator.o: headers/src/mac_calculator.cpp.o
+.PHONY : headers/src/mac_calculator.o
+
+# target to build an object file
+headers/src/mac_calculator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o
+.PHONY : headers/src/mac_calculator.cpp.o
+
+headers/src/mac_calculator.i: headers/src/mac_calculator.cpp.i
+.PHONY : headers/src/mac_calculator.i
+
+# target to preprocess a source file
+headers/src/mac_calculator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i
+.PHONY : headers/src/mac_calculator.cpp.i
+
+headers/src/mac_calculator.s: headers/src/mac_calculator.cpp.s
+.PHONY : headers/src/mac_calculator.s
+
+# target to generate assembly for a file
+headers/src/mac_calculator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s
+.PHONY : headers/src/mac_calculator.cpp.s
+
 headers/src/packet.o: headers/src/packet.cpp.o
 .PHONY : headers/src/packet.o
 
@@ -249,6 +321,30 @@ headers/src/rlnc_encoder.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s
 .PHONY : headers/src/rlnc_encoder.cpp.s
 
+headers/src/sign_calculator.o: headers/src/sign_calculator.cpp.o
+.PHONY : headers/src/sign_calculator.o
+
+# target to build an object file
+headers/src/sign_calculator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o
+.PHONY : headers/src/sign_calculator.cpp.o
+
+headers/src/sign_calculator.i: headers/src/sign_calculator.cpp.i
+.PHONY : headers/src/sign_calculator.i
+
+# target to preprocess a source file
+headers/src/sign_calculator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.i
+.PHONY : headers/src/sign_calculator.cpp.i
+
+headers/src/sign_calculator.s: headers/src/sign_calculator.cpp.s
+.PHONY : headers/src/sign_calculator.s
+
+# target to generate assembly for a file
+headers/src/sign_calculator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.s
+.PHONY : headers/src/sign_calculator.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -288,6 +384,15 @@ help:
 	@echo "... headers/src/ff.o"
 	@echo "... headers/src/ff.i"
 	@echo "... headers/src/ff.s"
+	@echo "... headers/src/hpacket.o"
+	@echo "... headers/src/hpacket.i"
+	@echo "... headers/src/hpacket.s"
+	@echo "... headers/src/keygenerator.o"
+	@echo "... headers/src/keygenerator.i"
+	@echo "... headers/src/keygenerator.s"
+	@echo "... headers/src/mac_calculator.o"
+	@echo "... headers/src/mac_calculator.i"
+	@echo "... headers/src/mac_calculator.s"
 	@echo "... headers/src/packet.o"
 	@echo "... headers/src/packet.i"
 	@echo "... headers/src/packet.s"
@@ -297,6 +402,9 @@ help:
 	@echo "... headers/src/rlnc_encoder.o"
 	@echo "... headers/src/rlnc_encoder.i"
 	@echo "... headers/src/rlnc_encoder.s"
+	@echo "... headers/src/sign_calculator.o"
+	@echo "... headers/src/sign_calculator.i"
+	@echo "... headers/src/sign_calculator.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

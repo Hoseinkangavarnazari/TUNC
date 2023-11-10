@@ -9,9 +9,3 @@ with open(file_path, "w") as file:
             print(F.Multiply(i, j))
             file.write(str(F.Multiply(i, j)) + "-")
         file.write("\n")
-
-    
-
-
-
-       

@@ -19,6 +19,7 @@ private:
 
 public:
     ff(int fieldSize);
+    std::vector<std::vector<uint8_t>> ff256;
 
     // Each of these will contain the finite field tables
     std::vector<std::vector<uint8_t>> ff256_addition;
@@ -37,7 +38,20 @@ int addInField(uint8_t a, uint8_t b, int fieldSize) {
 
 int main() {
     int fieldSize = 16;
+     // Read matrix from file
+    std::ifstream file("addition.txt");
+    //std::vector<std::vector<int>> matrix;
 
+    std::string line;
+    while (std::getline(file, line)) {
+        std::vector<uint8_t> row;
+        std::istringstream iss(line);
+        int value;
+        while (iss >> value) {
+            row.push_back(value);
+        }
+        ff256_addition.push_back(row);
+    }
     // Create a 2D vector to represent the addition table and initialize its dimensions
     std::vector<std::vector<int>> ff_addition(fieldSize, std::vector<int>(fieldSize));
 

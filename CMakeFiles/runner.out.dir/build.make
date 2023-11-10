@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hoseinknazari/Desktop/TUNC
+CMAKE_SOURCE_DIR = /home/akif/Documents/TUNC/TUNC
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hoseinknazari/Desktop/TUNC
+CMAKE_BINARY_DIR = /home/akif/Documents/TUNC/TUNC
 
 # Include any dependencies generated for this target.
 include CMakeFiles/runner.out.dir/depend.make
@@ -72,94 +72,154 @@ include CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o: headers/src/cFunctions.cpp
 CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/cFunctions.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/cFunctions.cpp
 
 CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/cFunctions.cpp > CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/cFunctions.cpp > CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.i
 
 CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/cFunctions.cpp -o CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/cFunctions.cpp -o CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.s
 
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.o: headers/src/ff.cpp
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/runner.out.dir/headers/src/ff.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/ff.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/ff.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/ff.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/runner.out.dir/headers/src/ff.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/ff.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/ff.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/ff.cpp
 
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/ff.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/ff.cpp > CMakeFiles/runner.out.dir/headers/src/ff.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/ff.cpp > CMakeFiles/runner.out.dir/headers/src/ff.cpp.i
 
 CMakeFiles/runner.out.dir/headers/src/ff.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/ff.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/ff.cpp -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/ff.cpp -o CMakeFiles/runner.out.dir/headers/src/ff.cpp.s
+
+CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o: headers/src/hpacket.cpp
+CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/hpacket.cpp
+
+CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/hpacket.cpp > CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.i
+
+CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/hpacket.cpp -o CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.s
+
+CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o: headers/src/keygenerator.cpp
+CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp
+
+CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp > CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.i
+
+CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp -o CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s
+
+CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: headers/src/mac_calculator.cpp
+CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp
+
+CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp > CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i
+
+CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s
 
 CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: headers/src/packet.cpp
 CMakeFiles/runner.out.dir/headers/src/packet.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/runner.out.dir/headers/src/packet.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/packet.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/runner.out.dir/headers/src/packet.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/packet.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp
 
 CMakeFiles/runner.out.dir/headers/src/packet.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/packet.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp > CMakeFiles/runner.out.dir/headers/src/packet.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp > CMakeFiles/runner.out.dir/headers/src/packet.cpp.i
 
 CMakeFiles/runner.out.dir/headers/src/packet.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/packet.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/packet.cpp -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.s
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: headers/src/rlnc_decoder.cpp
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_decoder.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_decoder.cpp
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_decoder.cpp > CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_decoder.cpp > CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.i
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_decoder.cpp -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_decoder.cpp -o CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.s
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: headers/src/rlnc_encoder.cpp
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -c /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_encoder.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_encoder.cpp
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_encoder.cpp > CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_encoder.cpp > CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.i
 
 CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/headers/src/rlnc_encoder.cpp -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/rlnc_encoder.cpp -o CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.s
+
+CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o: headers/src/sign_calculator.cpp
+CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/sign_calculator.cpp
+
+CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/sign_calculator.cpp > CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.i
+
+CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/sign_calculator.cpp -o CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.s
 
 CMakeFiles/runner.out.dir/main.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/main.cpp.o: main.cpp
 CMakeFiles/runner.out.dir/main.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/runner.out.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/main.cpp.o -MF CMakeFiles/runner.out.dir/main.cpp.o.d -o CMakeFiles/runner.out.dir/main.cpp.o -c /home/hoseinknazari/Desktop/TUNC/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/runner.out.dir/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/main.cpp.o -MF CMakeFiles/runner.out.dir/main.cpp.o.d -o CMakeFiles/runner.out.dir/main.cpp.o -c /home/akif/Documents/TUNC/TUNC/main.cpp
 
 CMakeFiles/runner.out.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hoseinknazari/Desktop/TUNC/main.cpp > CMakeFiles/runner.out.dir/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/main.cpp > CMakeFiles/runner.out.dir/main.cpp.i
 
 CMakeFiles/runner.out.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hoseinknazari/Desktop/TUNC/main.cpp -o CMakeFiles/runner.out.dir/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/main.cpp -o CMakeFiles/runner.out.dir/main.cpp.s
 
 # Object files for target runner.out
 runner_out_OBJECTS = \
 "CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/ff.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/packet.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o" \
 "CMakeFiles/runner.out.dir/main.cpp.o"
 
 # External object files for target runner.out
@@ -167,13 +227,17 @@ runner_out_EXTERNAL_OBJECTS =
 
 runner.out: CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/ff.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/packet.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/rlnc_encoder.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.o
 runner.out: CMakeFiles/runner.out.dir/main.cpp.o
 runner.out: CMakeFiles/runner.out.dir/build.make
 runner.out: CMakeFiles/runner.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hoseinknazari/Desktop/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable runner.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/akif/Documents/TUNC/TUNC/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable runner.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/runner.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -185,6 +249,6 @@ CMakeFiles/runner.out.dir/clean:
 .PHONY : CMakeFiles/runner.out.dir/clean
 
 CMakeFiles/runner.out.dir/depend:
-	cd /home/hoseinknazari/Desktop/TUNC && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/hoseinknazari/Desktop/TUNC /home/hoseinknazari/Desktop/TUNC /home/hoseinknazari/Desktop/TUNC /home/hoseinknazari/Desktop/TUNC /home/hoseinknazari/Desktop/TUNC/CMakeFiles/runner.out.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/akif/Documents/TUNC/TUNC && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/akif/Documents/TUNC/TUNC /home/akif/Documents/TUNC/TUNC /home/akif/Documents/TUNC/TUNC /home/akif/Documents/TUNC/TUNC /home/akif/Documents/TUNC/TUNC/CMakeFiles/runner.out.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/runner.out.dir/depend
 

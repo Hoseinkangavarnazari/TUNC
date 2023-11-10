@@ -33,7 +33,8 @@ uint8_t ff::add(uint8_t a, uint8_t b)
     }
 
     // return a + b % module;
-    return a ^ b;
+    //return a ^ b;   uncomment this
+    return ff256_addition[a][b];
 }
 
 uint8_t ff::mutiplicationInverse(uint8_t a)
