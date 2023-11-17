@@ -16,5 +16,4 @@ enum FieldSize
 };
 
 std::vector<uint8_t> randomDataGenerator(int dataSize, FieldSize fieldSize);
-
 #endif

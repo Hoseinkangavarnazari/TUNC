@@ -153,9 +153,12 @@ std::vector<uint8_t> ff::s2vDivision(std::vector<uint8_t> a, uint8_t b)
     return answer;
 }
 
+
+
+
+
 ff::ff(int fieldSize)
 {
-
     // fill out the tables for fields from files
     std::ifstream inputFile("result.txt");
 
@@ -203,3 +206,4 @@ ff::ff(int fieldSize)
         exit(EXIT_FAILURE);
     }
 };
+
