@@ -1,0 +1,3 @@
+PacketSize:100-MACSize:2Result:0.018
+PacketSize:100-MACSize:4Result:0.0198
+PacketSize:100-MACSize:2Result:0.0198

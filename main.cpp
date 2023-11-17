@@ -11,6 +11,7 @@
 #include "headers/rlnc_decoder.h"
 #include "headers/hpacket.h"
 #include <chrono>
+#include <fstream>
 
 std::vector<uint8_t> generateRandomVector(int size)
 {
@@ -75,11 +76,12 @@ int main()
 
   // decoder.decode();
 
-  std::vector<std::vector<uint8_t>> key1 = {{2, 3, 1, 4, 2}};
-  std::vector<uint8_t> private_key1 = {2, 4};
+  //std::vector<std::vector<uint8_t>> key1 = {{2, 3, 1, 4, 2}, {5, 8, 1, 19, 35}, {75, 15, 7, 9, 58}, {175, 156, 47, 91, 67}, {64, 23, 43, 56, 198}, {92, 37, 15, 42, 26}, {53, 82, 11, 91, 53}, {57, 51, 8, 6, 85}, {17, 106, 74, 19, 76}, {60, 25, 45, 55, 178}};
+
+  //std::vector<uint8_t> private_key1 = {2, 4, 13, 111, 68};
   // std::vector<uint8_t> private_key2 = {1, 7, 123, 8};
   // std::vector<uint8_t> private_key3 = {55, 58, 71};
-  std::vector<uint8_t> private_key = {5, 4, 3, 2, 1};
+  //std::vector<uint8_t> private_key = {5, 4, 3, 2, 1, 67, 89, 12, 23, 33, 234};
 
   std::vector<uint8_t> MACs;
   uint8_t currentsign;
@@ -97,27 +99,109 @@ int main()
   std::cout << "test";
 
   int counter = 0;
-  int examinationsNumber = 100;
+  int examinationsNumber = 1 * 1000;
+  std::vector<double> sum;
   std::vector<std::chrono::duration<double>> timer;
-  int size = 4;
-  for (int i = 0; i < examinationsNumber; i++)
-  {
-    // create an hpacket with the random data
-    std::vector<uint8_t> cs1 = generateRandomVector(size);
-    hpacket p1(cs1, MACs, key1, private_key1, 1);
+  std::vector<std::chrono::duration<double>> timerCombiner;
+  int minPacketSize = 100;
+  int maxPacketSize = 1101;
+  int packetStep = 200;
 
-    // start the timer
-    auto start = std::chrono::high_resolution_clock::now();
-    // check the integrity
-    p1.macVerifier();
-    p1.signVerifier();
-    // stop the timer
-    auto end = std::chrono::high_resolution_clock::now();
-    // stop-start
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    timer.push_back(duration);
+  int minMACSize = 5;
+  int maxMACSize = 51;
+  int MACStep = 5;
+
+  // change the file name based on the given steup
+
+  std::string filename = "./Results/Packet" + std::to_string(minPacketSize) + "-" + std::to_string(maxPacketSize);
+  filename += "MAC" + std::to_string(minMACSize) + "-" + std::to_string(maxMACSize);
+  filename += "ExNum:" + std::to_string(examinationsNumber);
+  filename += ".txt";
+
+  std::ofstream outputFile(filename, std::ios::app);
+
+  if (!outputFile.is_open())
+  {
+    std::cerr << "Error opening the file!" << std::endl;
+    return 1;
   }
-  std::cout << "here";
+
+  for (int packetSize = minPacketSize; packetSize < maxPacketSize; packetSize += packetStep)
+  {
+    for (int MACNumber = minMACSize; MACNumber < maxMACSize; MACNumber += MACStep)
+    {
+      // generate the keys for MACs based on the packet size
+      std::vector<std::vector<uint8_t>> key1;
+      for (int i = 0; i < MACNumber; i++)
+      {
+        std::vector<uint8_t> newKey = generateRandomVector(packetSize + 1);
+        key1.push_back(newKey);
+      };
+      // generate the keys for sign based on the packet size
+      //std::vector<uint8_t> private_key;
+      //for (int i = 0; i < MACNumber; i++)
+      //{
+       std::vector<uint8_t> private_key = generateRandomVector(MACNumber + 1);
+        //private_key.push_back(newPrivateKey);
+      //};
+
+      // int total_time=0;
+      timer.clear();
+      timerCombiner.clear();
+      for (int i = 0; i < examinationsNumber; i++)
+      {
+        // create an hpacket with the random data
+        std::vector<uint8_t> cs1 = generateRandomVector(packetSize);
+        std::vector<uint8_t> cs2 = generateRandomVector(packetSize);
+
+
+        hpacket p1(cs1,cs2, MACs, key1, private_key, MACNumber);
+
+        // start the timer
+        auto start = std::chrono::high_resolution_clock::now();
+        // check the integrity
+        p1.macVerifier();
+        p1.signVerifier();
+        // stop the timer
+        auto end = std::chrono::high_resolution_clock::now();
+        // stop-start
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        timer.push_back(duration);
+
+        // start the timer for combiner
+        auto startCombiner = std::chrono::high_resolution_clock::now();
+        // combine packets
+        p1.packetCombiner();
+        // stop the timer
+        auto endCombiner = std::chrono::high_resolution_clock::now();
+        // stop-start
+        auto durationCombiner = std::chrono::duration_cast<std::chrono::nanoseconds>(endCombiner - startCombiner);
+        timerCombiner.push_back(durationCombiner);
+      }
+      double sum_size = 0;
+      for (const auto &entry : timer)
+      {
+        sum_size += entry.count(); // Adding each duration to the sum in milliseconds
+      }
+      sum.push_back(sum_size / examinationsNumber);
+      //
+      double sum_sizeCombiner = 0;
+      for (const auto &entry : timerCombiner)
+      {
+        sum_sizeCombiner += entry.count(); // Adding each duration to the sum in milliseconds
+      }
+      sum.push_back(sum_sizeCombiner / examinationsNumber);
+      // print the result and put it in the file
+      outputFile << "PacketSize:" << packetSize << "-"
+                 << "MACSize:" << MACNumber << "-Result:" << sum_size / examinationsNumber << std::endl;
+      outputFile << "PacketSize:" << packetSize << "-"
+                 << "MACSize:" << MACNumber << "-ResultCombiner:" << sum_sizeCombiner / examinationsNumber << std::endl;
+      outputFile.flush();
+    }
+    outputFile << std::endl;
+    outputFile.flush();
+  }
+   std::cout << "here";
 
   return 0;
 };
