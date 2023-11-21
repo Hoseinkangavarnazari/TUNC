@@ -117,12 +117,12 @@ def run_sample():
 
 def run_simulation_and_record():
     num_vertices_options = [10, 20, 30]
-    num_simulations = 2000
+    num_simulations = 5000
     step = 5
 
     with open("./graphColoring/coloring_results.txt", "w") as file:
         # Writing the header with tab separation
-        file.write("Vertices\tSimulation\tEdges\tGreedy Colors\tWelsh-Powell Colors\n")
+        file.write("Vertices\t\t\t\tSimulation\t\t\t\tEdges\t\t\t\tGreedy Colors\t\t\t\tWelsh-Powell Colors\n")
 
         for num_vertices in num_vertices_options:
             edges_range = range(5, Graph(num_vertices).max_num_edges + 1, step)
@@ -144,12 +144,12 @@ def run_simulation_and_record():
                     results_welsh_powell.append(welsh_powell_num_colors)
 
                     # Writing each simulation result
-                    file.write(f"{num_vertices}\t{sim}\t{num_edges}\t{greedy_num_colors}\t{welsh_powell_num_colors}\n")
+                    file.write(f"{num_vertices}\t\t\t\t{sim}\t\t\t\t{num_edges}\t\t\t\t{greedy_num_colors}\t\t\t\t{welsh_powell_num_colors}\n")
 
                 avg_greedy.append(sum(results_greedy) / num_simulations)
                 avg_welsh_powell.append(sum(results_welsh_powell) / num_simulations)
 
-                file.write(f"Average\t{num_vertices}\t{num_edges}\t{avg_greedy[-1]:.2f}\t{avg_welsh_powell[-1]:.2f}\n")
+                file.write(f"Average\t\t\t\t{num_vertices}\t\t\t\t{num_edges}\t\t\t\t{avg_greedy[-1]:.2f}\t\t\t\t{avg_welsh_powell[-1]:.2f}\n")
 
         # file.write(f"Total Time Used for {len(num_vertices_options)} groups of nodes with {num_simulations} simulations: {time.time() - start_time:.2f} seconds\n")
 
@@ -182,7 +182,7 @@ def plot_simulation_results():
     with open("./graphColoring/coloring_results.txt", "r") as file:
         next(file)  # Skip the header
         for line in file:
-            parts = line.strip().split('\t')
+            parts = line.strip().split('\t\t\t\t')
             if parts[0] != "Average":
                 vertices, _, edges, greedy_colors, welsh_powell_colors = parts
                 if vertices == '10':
@@ -214,18 +214,18 @@ def plot_simulation_results():
 
     plt.figure(figsize=(30, 14))
 
-    plt.scatter(x_10, y_greedy_10, color='blue', alpha=0.05, label='Greedy (10 Vertices)')
-    plt.scatter(x_10, y_welsh_powell_10, color='red', alpha=0.05, label='Welsh-Powell (10 Vertices)')
+    # plt.scatter(x_10, y_greedy_10, color='blue', alpha=0.05, label='Greedy (10 Vertices)')
+    # plt.scatter(x_10, y_welsh_powell_10, color='red', alpha=0.05, label='Welsh-Powell (10 Vertices)')
     plt.plot(x_10_avg, y_greedy_10_avg, color='blue', label='Greedy (avg) - 10 Vertices')
     plt.plot(x_10_avg, y_welsh_powell_10_avg, color='red', label='Welsh-Powell (avg) - 10 Vertices')
 
-    plt.scatter(x_20, y_greedy_20, color='green', alpha=0.05, label='Greedy (20 Vertices)')
-    plt.scatter(x_20, y_welsh_powell_20, color='orange', alpha=0.05, label='Welsh-Powell (20 Vertices)')
+    # plt.scatter(x_20, y_greedy_20, color='green', alpha=0.05, label='Greedy (20 Vertices)')
+    # plt.scatter(x_20, y_welsh_powell_20, color='orange', alpha=0.05, label='Welsh-Powell (20 Vertices)')
     plt.plot(x_20_avg, y_greedy_20_avg, color='green', label='Greedy (avg) - 20 Vertices')
     plt.plot(x_20_avg, y_welsh_powell_20_avg, color='orange', label='Welsh-Powell (avg) - 20 Vertices')
 
-    plt.scatter(x_30, y_greedy_30, color='purple', alpha=0.05, label='Greedy (30 Vertices)')
-    plt.scatter(x_30, y_welsh_powell_30, color='brown', alpha=0.05, label='Welsh-Powell (30 Vertices)')
+    # plt.scatter(x_30, y_greedy_30, color='purple', alpha=0.05, label='Greedy (30 Vertices)')
+    # plt.scatter(x_30, y_welsh_powell_30, color='brown', alpha=0.05, label='Welsh-Powell (30 Vertices)')
     plt.plot(x_30_avg, y_greedy_30_avg, color='purple', label='Greedy (avg) - 30 Vertices')
     plt.plot(x_30_avg, y_welsh_powell_30_avg, color='brown', label='Welsh-Powell (avg) - 30 Vertices')
 
