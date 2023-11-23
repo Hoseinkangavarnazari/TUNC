@@ -3,6 +3,8 @@ import time
 
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 
 class Graph:
@@ -115,129 +117,81 @@ def run_sample():
     plt.show()
 
 
-def run_simulation_and_record():
-    num_vertices_options = [10, 20, 30]
-    num_simulations = 5000
-    step = 5
+def simulate(num_nodes, num_sims, step_edges):
+    columns = ['Simulation No.', 'Edges', 'Greedy Colors', 'Welsh-Powell Colors']
+    df = pd.DataFrame(columns=columns)
 
-    with open("./graphColoring/coloring_results.txt", "w") as file:
-        # Writing the header with tab separation
-        file.write("Vertices\t\t\t\tSimulation\t\t\t\tEdges\t\t\t\tGreedy Colors\t\t\t\tWelsh-Powell Colors\n")
+    range_edges = range(5, Graph(num_nodes).max_num_edges + 1, step_edges)
 
-        for num_vertices in num_vertices_options:
-            edges_range = range(5, Graph(num_vertices).max_num_edges + 1, step)
-            avg_greedy = []
-            avg_welsh_powell = []
+    for num_edges in range_edges:
+        for sim in range(1, num_sims + 1):
+            g = Graph(num_nodes)
+            g.generate_random_edges(num_edges)
 
-            for num_edges in edges_range:
-                results_greedy = []
-                results_welsh_powell = []
+            _, greedy_num_colors = g.color_greedy()
+            _, welsh_powell_num_colors = g.color_welsh_powell()
 
-                for sim in range(1, num_simulations + 1):
-                    g = Graph(num_vertices)
-                    g.generate_random_edges(num_edges)
+            new_row = pd.DataFrame([[sim, num_edges, greedy_num_colors, welsh_powell_num_colors]], columns=columns)
+            df = pd.concat([df, new_row], ignore_index=True)
 
-                    _, greedy_num_colors = g.color_greedy()
-                    _, welsh_powell_num_colors = g.color_welsh_powell()
-
-                    results_greedy.append(greedy_num_colors)
-                    results_welsh_powell.append(welsh_powell_num_colors)
-
-                    # Writing each simulation result
-                    file.write(f"{num_vertices}\t\t\t\t{sim}\t\t\t\t{num_edges}\t\t\t\t{greedy_num_colors}\t\t\t\t{welsh_powell_num_colors}\n")
-
-                avg_greedy.append(sum(results_greedy) / num_simulations)
-                avg_welsh_powell.append(sum(results_welsh_powell) / num_simulations)
-
-                file.write(f"Average\t\t\t\t{num_vertices}\t\t\t\t{num_edges}\t\t\t\t{avg_greedy[-1]:.2f}\t\t\t\t{avg_welsh_powell[-1]:.2f}\n")
-
-        # file.write(f"Total Time Used for {len(num_vertices_options)} groups of nodes with {num_simulations} simulations: {time.time() - start_time:.2f} seconds\n")
+    df.to_csv(f"./graphColoring/sim_{num_nodes}nodes_{num_sims}sims.csv", sep='\t', index=False)
 
 
-def plot_simulation_results():
-    x_10 = []
-    y_greedy_10 = []
-    y_welsh_powell_10 = []
+def plot_results(num_nodes, num_sims):
+    df = pd.read_csv(f"./graphColoring/sim_{num_nodes}nodes_{num_sims}sims.csv", sep='\t')
 
-    x_10_avg = []
-    y_greedy_10_avg = []
-    y_welsh_powell_10_avg = []
+    df['Greedy Colors'] = pd.to_numeric(df['Greedy Colors'], errors='coerce')
+    df['Welsh-Powell Colors'] = pd.to_numeric(df['Welsh-Powell Colors'], errors='coerce')
+    df['Edges'] = pd.to_numeric(df['Edges'], errors='coerce')
 
-    x_20 = []
-    y_greedy_20 = []
-    y_welsh_powell_20 = []
+    greedy_data = df[['Edges', 'Greedy Colors']]
+    greedy_data = greedy_data.rename(columns={'Greedy Colors': 'Colors'})
+    greedy_data['Algorithm'] = 'Greedy'
 
-    x_20_avg = []
-    y_greedy_20_avg = []
-    y_welsh_powell_20_avg = []
+    welsh_powell_data = df[['Edges', 'Welsh-Powell Colors']]
+    welsh_powell_data = welsh_powell_data.rename(columns={'Welsh-Powell Colors': 'Colors'})
+    welsh_powell_data['Algorithm'] = 'Welsh-Powell'
 
-    x_30 = []
-    y_greedy_30 = []
-    y_welsh_powell_30 = []
+    combined_data = pd.concat([greedy_data, welsh_powell_data])
 
-    x_30_avg = []
-    y_greedy_30_avg = []
-    y_welsh_powell_30_avg = []
+    plt.figure(figsize=(12, 6))
+    sns.set(style="whitegrid")
+    sns.boxplot(x='Edges', y='Colors', hue='Algorithm', data=combined_data, palette='Set2')
 
-    with open("./graphColoring/coloring_results.txt", "r") as file:
-        next(file)  # Skip the header
-        for line in file:
-            parts = line.strip().split('\t\t\t\t')
-            if parts[0] != "Average":
-                vertices, _, edges, greedy_colors, welsh_powell_colors = parts
-                if vertices == '10':
-                    x_10.append(int(edges))
-                    y_greedy_10.append(int(greedy_colors))
-                    y_welsh_powell_10.append(int(welsh_powell_colors))
-                elif vertices == '20':
-                    x_20.append(int(edges))
-                    y_greedy_20.append(int(greedy_colors))
-                    y_welsh_powell_20.append(int(welsh_powell_colors))
-                elif vertices == '30':
-                    x_30.append(int(edges))
-                    y_greedy_30.append(int(greedy_colors))
-                    y_welsh_powell_30.append(int(welsh_powell_colors))
-            else:
-                _, vertices, edges, avg_greedy, avg_welsh_powell = parts
-                if vertices == '10':
-                    x_10_avg.append(int(edges))
-                    y_greedy_10_avg.append(float(avg_greedy))
-                    y_welsh_powell_10_avg.append(float(avg_welsh_powell))
-                elif vertices == '20':
-                    x_20_avg.append(int(edges))
-                    y_greedy_20_avg.append(float(avg_greedy))
-                    y_welsh_powell_20_avg.append(float(avg_welsh_powell))
-                elif vertices == '30':
-                    x_30_avg.append(int(edges))
-                    y_greedy_30_avg.append(float(avg_greedy))
-                    y_welsh_powell_30_avg.append(float(avg_welsh_powell))
+    # 计算每种算法的平均颜色数并绘制
+    for algorithm in ['Greedy', 'Welsh-Powell']:
+        mean_colors = combined_data[combined_data['Algorithm'] == algorithm].groupby('Edges')['Colors'].mean().reset_index()
+        mean_colors['Edges'] = mean_colors['Edges'].astype(str)
+        plt.scatter(mean_colors['Edges'], mean_colors['Colors'], alpha=1, label=f'{algorithm} Mean')
+        plt.plot(mean_colors['Edges'], mean_colors['Colors'], linestyle='--' if algorithm == 'Welsh-Powell' else '-')
 
-    plt.figure(figsize=(30, 14))
-
-    # plt.scatter(x_10, y_greedy_10, color='blue', alpha=0.05, label='Greedy (10 Vertices)')
-    # plt.scatter(x_10, y_welsh_powell_10, color='red', alpha=0.05, label='Welsh-Powell (10 Vertices)')
-    plt.plot(x_10_avg, y_greedy_10_avg, color='blue', label='Greedy (avg) - 10 Vertices')
-    plt.plot(x_10_avg, y_welsh_powell_10_avg, color='red', label='Welsh-Powell (avg) - 10 Vertices')
-
-    # plt.scatter(x_20, y_greedy_20, color='green', alpha=0.05, label='Greedy (20 Vertices)')
-    # plt.scatter(x_20, y_welsh_powell_20, color='orange', alpha=0.05, label='Welsh-Powell (20 Vertices)')
-    plt.plot(x_20_avg, y_greedy_20_avg, color='green', label='Greedy (avg) - 20 Vertices')
-    plt.plot(x_20_avg, y_welsh_powell_20_avg, color='orange', label='Welsh-Powell (avg) - 20 Vertices')
-
-    # plt.scatter(x_30, y_greedy_30, color='purple', alpha=0.05, label='Greedy (30 Vertices)')
-    # plt.scatter(x_30, y_welsh_powell_30, color='brown', alpha=0.05, label='Welsh-Powell (30 Vertices)')
-    plt.plot(x_30_avg, y_greedy_30_avg, color='purple', label='Greedy (avg) - 30 Vertices')
-    plt.plot(x_30_avg, y_welsh_powell_30_avg, color='brown', label='Welsh-Powell (avg) - 30 Vertices')
-
+    plt.title(f'Coloring Algorithm Comparison ({num_nodes} Nodes, {num_sims} Simulations)')
     plt.xlabel('Number of Edges')
     plt.ylabel('Number of Colors Used')
-    plt.title('Graph Coloring')
     plt.legend()
-    plt.grid(True)
-    plt.savefig('./graphColoring/coloring_results.png')
+    # plt.savefig(f"./graphColoring/sim_{num_nodes}nodes_{num_sims}sims.eps", format='eps', dpi=1000)
+    plt.savefig(f"./graphColoring/sim_{num_nodes}nodes_{num_sims}sims.png", format='png', dpi=1000)
+    plt.close()
 
 
 if __name__ == "__main__":
     # run_sample()
-    run_simulation_and_record()
-    plot_simulation_results()
+
+    num_simulations = 5000
+    steps = 5
+
+    for nodes in [10, 20, 30]:
+        if nodes == 10:
+            steps = 5
+        elif nodes == 20:
+            steps = 15
+        elif nodes == 30:
+            steps = 30
+
+        start_time = time.time()
+        simulate(nodes, num_simulations, steps)
+        elapsed_time = time.time() - start_time
+        print(f"Time taken for {nodes} nodes ({num_simulations} runs): {elapsed_time:.3f} seconds")
+
+    for nodes in [10, 20, 30]:
+        plot_results(nodes, num_simulations)
