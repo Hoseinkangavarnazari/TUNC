@@ -37,7 +37,7 @@ class Graph:
     def __init__(self, s_count, i_count, d_count):
         self.nodes = {}
         self.counters = {"source": 0, "intermediate": 0, "sink": 0}
-        self.notations = {"source": "S", "intermediate": "I", "sink": "D"}
+        self.prefixes = {"source": "S", "intermediate": "I", "sink": "D"}
 
         for _ in range(s_count):
             self.add_node("source")
@@ -48,14 +48,14 @@ class Graph:
 
     def add_node(self, node_type):
         self.counters[node_type] += 1
-        prefix = self.notations[node_type]
+        prefix = self.prefixes[node_type]
         node_id = f"{prefix}{self.counters[node_type]}"  # Generates S1, I1, D1, etc.
         new_node = Node(node_id, node_type)
         self.nodes[node_id] = new_node
 
-    def add_edge(self, from_node, to_node):
-        if from_node in self.nodes and to_node in self.nodes:
-            self.nodes[from_node].add_edge(self.nodes[to_node])
+    def add_edge(self, from_node_id, to_node_id):
+        if from_node_id in self.nodes and to_node_id in self.nodes:
+            self.nodes[from_node_id].add_edge(self.nodes[to_node_id])
         else:
             raise ValueError("One or both nodes not found in the graph")
 
@@ -83,9 +83,9 @@ class Graph:
         # Connect the last intermediate node (or source if no intermediates) to the sink
         self.add_edge(current_node.node_id, sink_nodes[0].node_id)
 
-    def find_path(self, start_node_id, end_node_id):
+    def find_path(self, from_node_id, to_node_id):
         def dfs(current_node, path):
-            if current_node.node_id == end_node_id:
+            if current_node.node_id == to_node_id:
                 return path
             for next_node in current_node.downstreams:
                 result = dfs(next_node, path + [next_node.node_id])
@@ -93,8 +93,8 @@ class Graph:
                     return result
             return None
 
-        start_node = self.nodes[start_node_id]
-        return dfs(start_node, [start_node_id])
+        start_node = self.nodes[from_node_id]
+        return dfs(start_node, [from_node_id])
 
     def visualize(self, figname):
         plt.figure()
@@ -109,8 +109,8 @@ class Graph:
         G = nx.DiGraph()
         for node in self.nodes.values():
             G.add_node(node.node_id, label=f"{node.node_id}\n{' '.join(node.keys)}", color=colors['compromised'] if node.compromised else colors[node.node_type])
-            for adjacent in node.downstreams:
-                G.add_edge(node.node_id, adjacent.node_id)
+            for next_node in node.downstreams:
+                G.add_edge(node.node_id, next_node.node_id)
 
         pos = nx.kamada_kawai_layout(G)
         nx.draw(G, pos,
@@ -147,16 +147,33 @@ class KDC:
         return f"KDC({self.key_pool_size}, {self.key_pool}, {self.key_pool_size_options})"
 
 
+class Attacker:
+    def __init__(self, graph):
+        self.graph = graph
+
+    def compromise_node_random(self):
+        intermediate_nodes = [node.node_id for node in self.graph.nodes.values() if node.node_type == "intermediate"]
+        compromised_node_id = random.choice(intermediate_nodes)
+        self.graph.nodes[compromised_node_id].set_compromised(True)
+        return compromised_node_id
+
+    def compromise_node_by_id(self, node_id):
+        self.graph.nodes[node_id].set_compromised(True)
+
+    def reset_compromised_nodes(self):
+        for node in self.graph.nodes.values():
+            node.set_compromised(False)
+
+
 def data_pollution_attack(graph, kdc, runs):
     finite_field_size = 2 ** 8
 
     intermediate_nodes = [node.node_id for node in graph.nodes.values() if node.node_type == "intermediate"]
     sink_node_id = [node.node_id for node in graph.nodes.values() if node.node_type == "sink"][0]
 
-    # for key_subset_size in kdc.key_pool_size_options:
     for key_subset_size in tqdm(kdc.key_pool_size_options, desc='Overall Progress'):
-        pd_columns = ["compromised_node_id", "path", "is_success"]
-        results = pd.DataFrame(columns=pd_columns)
+        df_columns = ["compromised_node_id", "path", "is_success"]
+        results = pd.DataFrame(columns=df_columns)
 
         for _ in tqdm(range(runs), desc=f'Running attacks for key_subset_size={key_subset_size}'):
             kdc.reset_keys()
@@ -183,11 +200,11 @@ def data_pollution_attack(graph, kdc, runs):
                         is_success = False
                         break
 
-            new_row = pd.DataFrame([[compromised_node_id, path, is_success]], columns=pd_columns)
+            new_row = pd.DataFrame([[compromised_node_id, path, is_success]], columns=df_columns)
             results = pd.concat([results, new_row], ignore_index=True)
             compromised_node.set_compromised(False)
 
-        results.to_csv(f'networkAnalysis/data_pollution_attack_results_{runs}_{key_subset_size}.csv', index=False)
+        results.to_csv(f'networkAnalysis/dpa_results_{runs}_{key_subset_size}.csv', index=False)
 
 
 def plot_results(folder_path, runs):
