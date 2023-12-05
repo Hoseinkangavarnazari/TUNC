@@ -3,6 +3,7 @@ from typing import Set, List
 
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import pandas as pd
 import numpy as np
 
@@ -280,14 +281,17 @@ class Attacker:
 
 def plot_for_dpa_random(runs: int, subset_sizes: int):
     plt.figure()
+    plt.yscale('log')
+
     x_data = [i for i in range(1, subset_sizes + 1)]
     y_data = []
     for keys in range(1, subset_sizes + 1):
         df = pd.read_csv(f'./networkAnalysis/dpa_random/results_{runs}runs_{keys}keys.csv')
         success_count = (df['is_success'] == True).sum()
-        y_data.append(success_count)
+        success_ratio = max(success_count / runs, 1e-10)
+        y_data.append(success_ratio)
 
-    bars = plt.bar(x_data, y_data, color='red', label='Success Count')
+    bars = plt.bar(x_data, y_data, color='red', label='Success Ratio')
 
     for bar in bars:
         yval = bar.get_height()
@@ -295,7 +299,7 @@ def plot_for_dpa_random(runs: int, subset_sizes: int):
 
     plt.title(f'{runs} runs / key_subset_size')
     plt.xlabel(f'key_subset_size (key pool size = {subset_sizes + 1})')
-    plt.ylabel('Success Count')
+    plt.ylabel('Logarithmic Success Ratio')
     plt.xticks(x_data)
     plt.legend()
     plt.savefig(f'./networkAnalysis/dpa_random/plot_{runs}runs.png', dpi=300)
@@ -303,7 +307,9 @@ def plot_for_dpa_random(runs: int, subset_sizes: int):
 
 
 def plot_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
-    plt.figure()
+    plt.figure(figsize=(10, 6))
+    plt.yscale('log')
+
     x_data = [i for i in range(1, subset_sizes + 1)]
     for hops in range(1, hops + 1):
         y_data = []
@@ -311,56 +317,67 @@ def plot_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
         for keys in range(1, subset_sizes + 1):
             df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hops}hops.csv')
             success_count = (df['is_success'] == True).sum()
-            y_data.append(success_count)
+            success_ratio = max(success_count / runs, 1e-10)
+            y_data.append(success_ratio)
 
         plt.plot(x_data, y_data, label=f'{hops} hops')
 
-        for i, v in enumerate(y_data):
-            plt.text(x_data[i], v, v, va='bottom', ha='center')
+        # for i, v in enumerate(y_data):
+        #     plt.text(x_data[i], v, f'{v:.2f}', va='bottom', ha='center')
 
     plt.title(f'{runs} runs / key_subset_size / hop')
     plt.xlabel(f'key_subset_size (key pool size = {subset_sizes + 1})')
-    plt.ylabel('Success Count')
+    plt.ylabel('Logarithmic Success Ratio')
     plt.xticks(x_data)
-    plt.legend()
+    plt.legend(loc='upper right')
     plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs.png', dpi=300)
+    # plt.show()
     plt.close()
 
 
 def plot_3d_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
 
-    x_data, y_data, z_data = [], [], []
+    def log_tick_formatter(val, pos=None):
+        return r"$10^{{{:.0f}}}$".format(val)
+
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+    # ax.zaxis._set_scale('log')  # plt bug
+    ax.zaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
+    ax.set_zticklabels(['$10^{-10}$', '$10^{-8}$', '$10^{-6}$', '$10^{-4}$', '$10^{-2}$', '$10^{0}$'])
+
+    # 设置柱体大小和间隙
+    dx, dy = 0.4, 0.4  # 柱体在X和Y轴的宽度，小于1则会产生间隙
+
+    colors = {
+        1: '#1f77b4', 2: '#ff7f0e', 3: '#2ca02c', 4: '#d62728',
+        5: '#9467bd', 6: '#8c564b', 7: '#e377c2', 8: '#7f7f7f',
+        9: '#bcbd22', 10: '#17becf'
+    }
 
     for hop in range(1, hops + 1):
         for keys in range(1, subset_sizes + 1):
             df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hop}hops.csv')
             success_count = (df['is_success'] == True).sum()
+            success_ratio = max(success_count / runs, 1e-10)
+            success_ratio_log = 10 + np.log10(success_ratio)
+            # success_ratio_log = np.log10(success_ratio)
 
-            x_data.append(hop)
-            y_data.append(keys)
-            z_data.append(success_count)
+            color = colors.get(hop, '#000000')  # 如果hop值不在字典中，则使用默认颜色（黑色）
+            ax.bar3d(x=hop - dx / 2, y=keys - dy / 2, z=0, dx=dx, dy=dy, dz=success_ratio_log, color=color, alpha=0.8, shade=True)
 
-    x_data = np.array(x_data)
-    y_data = np.array(y_data)
-    z_data = np.array(z_data)
-
-    # 创建网格数据
-    X, Y = np.meshgrid(np.unique(x_data), np.unique(y_data))
-    Z = z_data.reshape(len(np.unique(y_data)), len(np.unique(x_data)))
-
-    # 绘制三维曲面图，使用coolwarm颜色映射
-    surf = ax.plot_surface(X, Y, Z, cmap='coolwarm')
-
+    ax.set_title(f'{runs} runs / key_subset_size / hop')
     ax.set_xlabel('Hops')
-    ax.set_ylabel('Keys')
-    ax.set_zlabel('Success Count')
+    ax.set_ylabel('Key Subset Size')
+    ax.set_zlabel('Logarithmic Success Ratio')
+    ax.set_xticks(range(1, hops + 1))
+    ax.set_yticks(range(1, subset_sizes + 1))
+    # elevation 仰角，azimuth 方位角
+    ax.view_init(elev=20, azim=-15)
+    plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs_3D.png', dpi=300)
+    # plt.show()
+    plt.close()
 
-    # 添加颜色条
-    fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
-    plt.title(f'{runs} runs / key_subset_size / hop')
-    plt.savefig(f'./networkAnalysis/dpa_fix/plot_3d_{runs}runs.png', dpi=300)
 
 if __name__ == "__main__":
     runs = 100000
