@@ -335,53 +335,53 @@ def plot_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
     plt.close()
 
 
-def plot_3d_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
-
-    def log_tick_formatter(val, pos=None):
-        return r"$10^{{{:.0f}}}$".format(val)
-
-    fig = plt.figure(figsize=(12, 12))
-    ax = fig.add_subplot(1, 1, 1, projection='3d')
-    # ax.zaxis._set_scale('log')  # plt bug
-    ax.zaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
-    ax.set_zticklabels(['$10^{-10}$', '$10^{-8}$', '$10^{-6}$', '$10^{-4}$', '$10^{-2}$', '$10^{0}$'])
-
-    # 设置柱体大小和间隙
-    dx, dy = 0.4, 0.4  # 柱体在X和Y轴的宽度，小于1则会产生间隙
-
-    colors = {
-        1: '#1f77b4', 2: '#ff7f0e', 3: '#2ca02c', 4: '#d62728',
-        5: '#9467bd', 6: '#8c564b', 7: '#e377c2', 8: '#7f7f7f',
-        9: '#bcbd22', 10: '#17becf'
-    }
-
-    for hop in range(1, hops + 1):
-        for keys in range(1, subset_sizes + 1):
-            df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hop}hops.csv')
-            success_count = (df['is_success'] == True).sum()
-            success_ratio = max(success_count / runs, 1e-10)
-            success_ratio_log = 10 + np.log10(success_ratio)
-            # success_ratio_log = np.log10(success_ratio)
-
-            color = colors.get(hop, '#000000')  # 如果hop值不在字典中，则使用默认颜色（黑色）
-            ax.bar3d(x=hop - dx / 2, y=keys - dy / 2, z=0, dx=dx, dy=dy, dz=success_ratio_log, color=color, alpha=0.8, shade=True)
-
-    ax.set_title(f'{runs} runs / key_subset_size / hop')
-    ax.set_xlabel('Hops')
-    ax.set_ylabel('Key Subset Size')
-    ax.set_zlabel('Logarithmic Success Ratio')
-    ax.set_xticks(range(1, hops + 1))
-    ax.set_yticks(range(1, subset_sizes + 1))
-    # elevation 仰角，azimuth 方位角
-    ax.view_init(elev=20, azim=-15)
-    plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs_3D.png', dpi=300)
-    # plt.show()
-    plt.close()
+# def plot_3d_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
+#
+#     # def log_tick_formatter(val, pos=None):
+#     #     return r"$10^{{{:.0f}}}$".format(val)
+#
+#     fig = plt.figure(figsize=(12, 12))
+#     ax = fig.add_subplot(1, 1, 1, projection='3d')
+#     ax.zaxis._set_scale('log')  # plt bug
+#     # ax.zaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
+#     # ax.set_zticklabels(['$10^{-10}$', '$10^{-8}$', '$10^{-6}$', '$10^{-4}$', '$10^{-2}$', '$10^{0}$'])
+#
+#     # 设置柱体大小和间隙
+#     dx, dy = 0.4, 0.4  # 柱体在X和Y轴的宽度，小于1则会产生间隙
+#
+#     colors = {
+#         1: '#1f77b4', 2: '#ff7f0e', 3: '#2ca02c', 4: '#d62728',
+#         5: '#9467bd', 6: '#8c564b', 7: '#e377c2', 8: '#7f7f7f',
+#         9: '#bcbd22', 10: '#17becf'
+#     }
+#
+#     for hop in range(1, hops + 1):
+#         for keys in range(1, subset_sizes + 1):
+#             df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hop}hops.csv')
+#             success_count = (df['is_success'] == True).sum()
+#             success_ratio = max(success_count / runs, 1e-10)
+#             # success_ratio_log = 10 + np.log10(success_ratio)
+#             # # success_ratio_log = np.log10(success_ratio)
+#
+#             color = colors.get(hop, '#000000')  # 如果hop值不在字典中，则使用默认颜色（黑色）
+#             ax.bar3d(x=hop - dx / 2, y=keys - dy / 2, z=0, dx=dx, dy=dy, dz=success_ratio, color=color, alpha=0.8, shade=True)
+#
+#     ax.set_title(f'{runs} runs / key_subset_size / hop')
+#     ax.set_xlabel('Hops')
+#     ax.set_ylabel('Key Subset Size')
+#     ax.set_zlabel('Logarithmic Success Ratio')
+#     ax.set_xticks(range(1, hops + 1))
+#     ax.set_yticks(range(1, subset_sizes + 1))
+#     # elevation 仰角，azimuth 方位角
+#     ax.view_init(elev=20, azim=-15)
+#     plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs_3D.png', dpi=300)
+#     # plt.show()
+#     plt.close()
 
 
 if __name__ == "__main__":
-    runs = 100000
-    key_pool_size = 10
+    runs = 10
+    key_pool_size = 5
 
     graph = Graph(1, 8, 1)
     kdc = KDC(graph, key_pool_size)
@@ -393,8 +393,6 @@ if __name__ == "__main__":
     sizes = key_pool_size - 1
 
     # attacker.dpa_random_pos(runs)
-    plot_for_dpa_random(runs, sizes)
+    # plot_for_dpa_random(runs, sizes)
 
-    # attacker.dpa_fix_pos(one_way, runs)
-    plot_for_dpa_fix(runs, sizes, hops)
-    plot_3d_for_dpa_fix(runs, sizes, hops)
+    attacker.dpa_fix_pos(one_way, runs)
