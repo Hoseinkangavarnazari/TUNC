@@ -201,55 +201,74 @@ class Attacker:
         self.key_pool_compromised = set()
         self.nodes_compromised = set()
 
-    def dpa_random_pos(self, runs):
+    def dpa_random_pos(self, runs: int, max_num_compromised_nodes: int):
         sink_node_id = self.graph.find_nodes_by_type("sink")[0].node_id
 
-        df_columns = ["compromised_nodes_id", "path", "is_success"]
+        # df_columns = ['compromised_nodes_id', 'path', 'is_success', 'key_pool_compromised', 'pass_paths']
+        df_columns = ["compromised_nodes_id", "is_success"]
 
-        for key_subset_size in tqdm(self.kdc.key_pool_size_options, desc='Overall Progress'):
+        for num_compromised_nodes in tqdm(range(1, max_num_compromised_nodes + 1), desc='Overall Progress'):
+            for key_subset_size in self.kdc.key_pool_size_options:
+                results = pd.DataFrame(columns=df_columns)
 
-            results = pd.DataFrame(columns=df_columns)
+                for _ in tqdm(range(runs), desc=f'Running for key_subset_size={key_subset_size}'):
+                    self.kdc.reset_keys()
+                    self.kdc.distribute_keys(key_subset_size)
+                    self.reset_comromised()
+                    self.compromise_nodes_random(num_compromised_nodes)
 
-            for _ in tqdm(range(runs), desc=f'Running attacks for key_subset_size={key_subset_size}'):
-                self.kdc.reset_keys()
-                self.kdc.distribute_keys(key_subset_size)
+                    # self.graph.visualize(f'./networkAnalysis/dpa_random/network_{num_compromised_nodes}c_{runs}runs_{key_subset_size}keys.png')
+                    # pass_paths = []
 
-                self.reset_comromised()
-                self.compromise_nodes_random(1)
+                    paths = []
+                    for node in self.nodes_compromised:
+                        paths.append(self.graph.find_path(node.node_id, sink_node_id))
 
-                path_from_c_to_sink = self.graph.find_path(list(self.nodes_compromised)[0].node_id, sink_node_id)
+                    for path in paths:
+                        is_success = 0  # 0 = fail, 1 = success
 
-                is_success = False
-                for n_id in path_from_c_to_sink[1:]:
-                    node = self.graph.find_node_by_id(n_id)
-                    if node.keys <= self.key_pool_compromised:  # If all keys in node.keys are in key_pool_compromised
-                        is_success = True
-                    else:
-                        d = len(node.keys - self.key_pool_compromised)  # Number of keys not in key_pool_compromised
-                        if random.randint(1, self.finite_field_size ** d) == 1:
-                            is_success = True
-                        else:
-                            is_success = False
+                        # pass_path = []
+
+                        for n_id in path[1:]:    # Skip the compromised node
+                            node = self.graph.find_node_by_id(n_id)
+                            if node.keys <= self.key_pool_compromised:  # If all keys in node.keys are in key_pool_compromised
+                                is_success = 1
+                                # pass_path.append('success (no)')
+                            else:
+                                d = len(node.keys - self.key_pool_compromised)  # Number of keys not in key_pool_compromised
+                                if random.randint(1, self.finite_field_size ** d) == 1:
+                                # if random.randint(1, 2) == 1:
+                                    is_success = 1
+                                    # pass_path.append('success (yes)')
+                                else:
+                                    is_success = 0
+                                    # pass_path.append('fail')
+                                    break
+
+                        # pass_paths.append(pass_path)
+
+                        if is_success == 1: # If success, no need to check other compromised nodes
                             break
 
-                new_row = pd.DataFrame([[self.get_id_of_compromised_nodes() , path_from_c_to_sink, is_success]], columns=df_columns)
-                results = pd.concat([results, new_row], ignore_index=True)
+                    # new_row = pd.DataFrame([[self.get_id_of_compromised_nodes(), paths, is_success, self.key_pool_compromised, pass_paths]], columns=df_columns)
+                    new_row = pd.DataFrame([[self.get_id_of_compromised_nodes(), is_success]], columns=df_columns)
+                    results = pd.concat([results, new_row], ignore_index=True)
 
-            results.to_csv(f'./networkAnalysis/dpa_random/results_{runs}runs_{key_subset_size}keys.csv', index=False)
-
-        self.graph.visualize(f'./networkAnalysis/dpa_random/network_{runs}runs.png')
+                results.to_csv(f'./networkAnalysis/dpa_random/results_{num_compromised_nodes}c_{runs}runs_{key_subset_size}keys.csv', index=False)
 
     def dpa_fix_pos(self, one_way, runs):
         intermediate_nodes_id = one_way[1:-1]
         sink_node_id = one_way[-1]
 
-        df_columns = ["compromised_nodes_id", "key_subset_size", "is_success"]
+        # df_columns_debug = ["compromised_nodes_id", "key_subset_size", "is_success"]
+        df_columns = ["compromised_nodes_id", "is_success"]
 
         for i, i_id in tqdm(enumerate(intermediate_nodes_id), desc='Overall Progress'):
+            hops = len(intermediate_nodes_id) - i
             self.compromise_node_by_id(i_id)
             path_from_c_to_sink = self.graph.find_path(i_id, sink_node_id)
 
-            for key_subset_size in tqdm(self.kdc.key_pool_size_options, desc=f'Running for node_id={i_id}'):
+            for key_subset_size in range(1, self.kdc.key_pool_size + 1):
 
                 results = pd.DataFrame(columns=df_columns)
 
@@ -259,35 +278,35 @@ class Attacker:
                     self.reset_comromised()
                     self.compromise_node_by_id(i_id)
 
-                    is_success = False
+                    is_success = 0
                     for n_id in path_from_c_to_sink[1:]:
                         node = self.graph.find_node_by_id(n_id)
                         if node.keys <= self.key_pool_compromised:
-                            is_success = True
+                            is_success = 1
                         else:
                             d = len(node.keys - self.key_pool_compromised)
                             if random.randint(1, self.finite_field_size ** d) == 1:
-                                is_success = True
+                                is_success = 1
                             else:
-                                is_success = False
+                                is_success = 0
                                 break
 
-                    new_row = pd.DataFrame([[self.get_id_of_compromised_nodes(), key_subset_size, is_success]], columns=df_columns)
+                    new_row = pd.DataFrame([[self.get_id_of_compromised_nodes(), is_success]], columns=df_columns)
                     results = pd.concat([results, new_row], ignore_index=True)
 
-                results.to_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{key_subset_size}keys_{len(intermediate_nodes_id) - i}hops.csv', index=False)
+                results.to_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{key_subset_size}keys_{hops}hops.csv', index=False)
 
         self.graph.visualize(f'./networkAnalysis/dpa_fix/network_{runs}runs.png')
 
-def plot_for_dpa_random(runs: int, subset_sizes: int):
+def plot_for_dpa_random(runs: int, subset_sizes: int, num_compromised_nodes: int):
     plt.figure()
     plt.yscale('log')
 
     x_data = [i for i in range(1, subset_sizes + 1)]
     y_data = []
     for keys in range(1, subset_sizes + 1):
-        df = pd.read_csv(f'./networkAnalysis/dpa_random/results_{runs}runs_{keys}keys.csv')
-        success_count = (df['is_success'] == True).sum()
+        df = pd.read_csv(f'./networkAnalysis/dpa_random/results_{num_compromised_nodes}c_{runs}runs_{keys}keys.csv')
+        success_count = (df['is_success'] == 1).sum()
         success_ratio = max(success_count / runs, 1e-10)
         y_data.append(success_ratio)
 
@@ -297,91 +316,19 @@ def plot_for_dpa_random(runs: int, subset_sizes: int):
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2, yval, yval, va='bottom', ha='center')
 
-    plt.title(f'{runs} runs / key_subset_size')
+    plt.title(f'{runs} runs / key_subset_size ({num_compromised_nodes} compromised nodes)')
     plt.xlabel(f'key_subset_size (key pool size = {subset_sizes + 1})')
     plt.ylabel('Logarithmic Success Ratio')
     plt.xticks(x_data)
     plt.legend()
-    plt.savefig(f'./networkAnalysis/dpa_random/plot_{runs}runs.png', dpi=300)
+    plt.savefig(f'./networkAnalysis/dpa_random/plot_{num_compromised_nodes}c_{runs}runs.png', dpi=300)
     plt.close()
-
-
-def plot_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
-    plt.figure(figsize=(10, 6))
-    plt.yscale('log')
-
-    x_data = [i for i in range(1, subset_sizes + 1)]
-    for hops in range(1, hops + 1):
-        y_data = []
-
-        for keys in range(1, subset_sizes + 1):
-            df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hops}hops.csv')
-            success_count = (df['is_success'] == True).sum()
-            success_ratio = max(success_count / runs, 1e-10)
-            y_data.append(success_ratio)
-
-        plt.plot(x_data, y_data, label=f'{hops} hops')
-
-        # for i, v in enumerate(y_data):
-        #     plt.text(x_data[i], v, f'{v:.2f}', va='bottom', ha='center')
-
-    plt.title(f'{runs} runs / key_subset_size / hop')
-    plt.xlabel(f'key_subset_size (key pool size = {subset_sizes + 1})')
-    plt.ylabel('Logarithmic Success Ratio')
-    plt.xticks(x_data)
-    plt.legend(loc='upper right')
-    plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs.png', dpi=300)
-    # plt.show()
-    plt.close()
-
-
-# def plot_3d_for_dpa_fix(runs: int, subset_sizes: int, hops: int):
-#
-#     # def log_tick_formatter(val, pos=None):
-#     #     return r"$10^{{{:.0f}}}$".format(val)
-#
-#     fig = plt.figure(figsize=(12, 12))
-#     ax = fig.add_subplot(1, 1, 1, projection='3d')
-#     ax.zaxis._set_scale('log')  # plt bug
-#     # ax.zaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
-#     # ax.set_zticklabels(['$10^{-10}$', '$10^{-8}$', '$10^{-6}$', '$10^{-4}$', '$10^{-2}$', '$10^{0}$'])
-#
-#     # 设置柱体大小和间隙
-#     dx, dy = 0.4, 0.4  # 柱体在X和Y轴的宽度，小于1则会产生间隙
-#
-#     colors = {
-#         1: '#1f77b4', 2: '#ff7f0e', 3: '#2ca02c', 4: '#d62728',
-#         5: '#9467bd', 6: '#8c564b', 7: '#e377c2', 8: '#7f7f7f',
-#         9: '#bcbd22', 10: '#17becf'
-#     }
-#
-#     for hop in range(1, hops + 1):
-#         for keys in range(1, subset_sizes + 1):
-#             df = pd.read_csv(f'./networkAnalysis/dpa_fix/results_{runs}runs_{keys}keys_{hop}hops.csv')
-#             success_count = (df['is_success'] == True).sum()
-#             success_ratio = max(success_count / runs, 1e-10)
-#             # success_ratio_log = 10 + np.log10(success_ratio)
-#             # # success_ratio_log = np.log10(success_ratio)
-#
-#             color = colors.get(hop, '#000000')  # 如果hop值不在字典中，则使用默认颜色（黑色）
-#             ax.bar3d(x=hop - dx / 2, y=keys - dy / 2, z=0, dx=dx, dy=dy, dz=success_ratio, color=color, alpha=0.8, shade=True)
-#
-#     ax.set_title(f'{runs} runs / key_subset_size / hop')
-#     ax.set_xlabel('Hops')
-#     ax.set_ylabel('Key Subset Size')
-#     ax.set_zlabel('Logarithmic Success Ratio')
-#     ax.set_xticks(range(1, hops + 1))
-#     ax.set_yticks(range(1, subset_sizes + 1))
-#     # elevation 仰角，azimuth 方位角
-#     ax.view_init(elev=20, azim=-15)
-#     plt.savefig(f'./networkAnalysis/dpa_fix/plot_{runs}runs_3D.png', dpi=300)
-#     # plt.show()
-#     plt.close()
 
 
 if __name__ == "__main__":
-    runs = 10
-    key_pool_size = 5
+    runs = 100000
+    key_pool_size = 10
+    max_num_compromised_nodes = 5
 
     graph = Graph(1, 8, 1)
     kdc = KDC(graph, key_pool_size)
@@ -392,7 +339,6 @@ if __name__ == "__main__":
     hops = len(one_way) - 2
     sizes = key_pool_size - 1
 
-    # attacker.dpa_random_pos(runs)
-    # plot_for_dpa_random(runs, sizes)
-
-    attacker.dpa_fix_pos(one_way, runs)
+    attacker.dpa_random_pos(runs, max_num_compromised_nodes)
+    plot_for_dpa_random(runs, sizes, max_num_compromised_nodes)
+    # attacker.dpa_fix_pos(one_way, runs)
