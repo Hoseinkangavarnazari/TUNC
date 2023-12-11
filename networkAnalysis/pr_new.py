@@ -11,7 +11,6 @@ from tqdm import tqdm
 class NGraph:
     def __init__(self):
         self.type: str = None
-        self.node_attrs_count: int = 6
         self.nxg = nx.Graph()
         self.picked_path: List[int] = None
 
@@ -25,7 +24,7 @@ class NGraph:
         while not nx.is_connected(self.nxg):
             self.nxg = nx.watts_strogatz_graph(num_nodes, k=4, p=0.5)
 
-        self.add_default_attrs()
+        self.reset_node_attrs()
 
         nodes_list = list(self.nxg.nodes)
 
@@ -40,13 +39,14 @@ class NGraph:
             if self.nxg.nodes[node]['node_type'] is None:
                 self.nxg.nodes[node]['node_type'] = 'intermediate'
 
-    def save_graph(self):
+    def take_snapshot(self, filename=None):
         """
         Take a snapshot of the current graph, including reachability matrix and node attributes.
         """
 
-        # filename = f'graph_{self.type}_{self.nxg.number_of_nodes()}nodes.csv'
-        filename = f'graph_temp.csv'
+        if filename is None:
+            # filename = f'graph_{self.type}_{self.nxg.number_of_nodes()}nodes.csv'
+            filename = f'graph_temp.csv'
 
         df_rm = nx.to_pandas_adjacency(self.nxg, dtype=int)
 
@@ -56,57 +56,72 @@ class NGraph:
         df_combined = pd.concat([df_rm, df_attrs], axis=1) # axis=1: concat by column
         df_combined.to_csv(filename)
 
-    def load_graph(self, filename):
+    def restore_snapshot(self, filename):
+        """
+        Restore a graph from a snapshot file.
+        Only defined node attributes will be restored.
+        """
+
         df_combined = pd.read_csv(filename, index_col=0)    # index_col=0: use the first column as index
 
-        df_rm = df_combined.iloc[:, :df_combined.shape[1] - self.node_attrs_count]  # extract reachability matrix
+        node_attrs_count_in_file = df_combined.shape[1] - df_combined.shape[0]  # shape[0]: number of rows, shape[1]: number of columns
+
+        df_rm = df_combined.iloc[:, :df_combined.shape[1] - node_attrs_count_in_file]  # extract reachability matrix
         df_rm.columns = df_rm.columns.map(int)  # convert column names to int
         self.nxg = nx.from_pandas_adjacency(df_rm)
 
-        df_attrs = df_combined.iloc[:, -self.node_attrs_count:]     # extract node attributes
+        df_attrs = df_combined.iloc[:, -node_attrs_count_in_file:]     # extract node attributes
+        self.reset_node_attrs()
+        defined_attrs = list(self.nxg.nodes[0].keys())
+
         for node in self.nxg.nodes:
-            for attr in df_attrs.columns:
+            for attr in defined_attrs:
                 self.nxg.nodes[node][attr] = df_attrs.loc[node, attr]
 
-    def add_default_attrs(self):
-        # update self.node_attrs_count if new attributes are added
+    def reset_node_attrs(self):
         for node in self.nxg.nodes:
             self.nxg.nodes[node]['node_type']: str = None
             self.nxg.nodes[node]['compromised']: bool = False
             self.nxg.nodes[node]['keys']: Set[str] = None
-            self.nxg.nodes[node]['v_label']: str = None
-            self.nxg.nodes[node]['v_size']: int = 100
             self.nxg.nodes[node]['v_color']: str = None
 
     def visualize(self):
         num_colors = 100
         colors = plt.colormaps['tab20']
-        color_map = {i : colors(i) for i in range(num_colors)}
+        color_map = {i: colors(i) for i in range(num_colors)}
+
+        node_sizes = {}
+        node_labels = {}
+        v_colors = [color_map.get(self.nxg.nodes[node]['v_color'], 'grey') for node in self.nxg.nodes]
 
         for node in self.nxg.nodes:
             node_type = self.nxg.nodes[node]['node_type']
-            compromised_flag = ' (C)' if self.nxg.nodes[node]['compromised'] else ''
-            self.nxg.nodes[node]['v_label'] = node_type[0].upper() + str(node) + compromised_flag + '\n' + str(self.nxg.nodes[node]['keys'])
 
-            if node_type == 'source' or node_type == 'destination':
-                self.nxg.nodes[node]['v_size'] = 500
+            if node_type in ['source', 'destination']:
+                node_sizes[node] = 800
+            elif self.nxg.nodes[node]['compromised']:
+                node_sizes[node] = 600
+            else:
+                node_sizes[node] = 300  # Default size for other nodes
+
+            node_labels[node] = f"{node_type[0].upper()}{node}\n{self.nxg.nodes[node]['keys']}"
 
         plt.figure(figsize=(12, 12))
         pos = nx.kamada_kawai_layout(self.nxg)
 
-        v_colors = [color_map.get(self.nxg.nodes[node]['v_color'], 'grey') for node in self.nxg.nodes]
-        v_sizes = [self.nxg.nodes[node]['v_size'] for node in self.nxg.nodes]
-        v_labels = {node: self.nxg.nodes[node]['v_label'] for node in self.nxg.nodes}
+        compromised_nodes = [node for node in self.nxg.nodes if self.nxg.nodes[node]['compromised']]
+        normal_nodes = [node for node in self.nxg.nodes if not self.nxg.nodes[node]['compromised']]
 
-        nx.draw_networkx_nodes(self.nxg, pos, node_size=v_sizes, node_color=v_colors)
-        nx.draw_networkx_edges(self.nxg, pos, edgelist=self.nxg.edges, edge_color='black', width=1)
+        nx.draw_networkx_nodes(self.nxg, pos, nodelist=normal_nodes, node_size=[node_sizes[n] for n in normal_nodes], node_color=[v_colors[n] for n in normal_nodes])
+        nx.draw_networkx_nodes(self.nxg, pos, nodelist=compromised_nodes, node_size=[node_sizes[n] for n in compromised_nodes], node_color=[v_colors[n] for n in compromised_nodes], linewidths=1.5, edgecolors='red', node_shape='*')
+
+        nx.draw_networkx_edges(self.nxg, pos, edgelist=self.nxg.edges, edge_color='black', width=1, alpha=0.3)
 
         if self.picked_path is not None:
-            nx.draw_networkx_edges(self.nxg, pos, edgelist=[(self.picked_path[i], self.picked_path[i + 1]) for i in range(len(self.picked_path) - 1)], edge_color='red', width=2)
+            nx.draw_networkx_edges(self.nxg, pos, edgelist=[(self.picked_path[i], self.picked_path[i + 1]) for i in range(len(self.picked_path) - 1)], edge_color='red', width=1.5)
 
-        nx.draw_networkx_labels(self.nxg, pos, labels=v_labels)
+        nx.draw_networkx_labels(self.nxg, pos, labels=node_labels)
 
-        # plt.axis('off')
         plt.show()
         plt.close()
 
@@ -140,18 +155,23 @@ class KDC:
 
     def distribute_fix_num_keys_randomly(self, key_subset_size: int):
         """
-        Distributes a fixed number of keys randomly to each node.
+        Distributes a fixed number of keys randomly to each non-source node.
         """
 
         if key_subset_size > self.key_pool_size:
             raise ValueError("key_subset_size cannot be larger than key_pool_size")
 
-        for node in self.graph.nxg.nodes():
-            # source nodes have all the keys
-            if self.graph.nxg.nodes[node]['node_type'] == "source":
-                self.graph.nxg.nodes[node]['keys'] = self.key_pool.copy()
-            else:
-                self.graph.nxg.nodes[node]['keys'] = set(random.sample(sorted(self.key_pool), key_subset_size))
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 'source']
+        subgraph = self.graph.nxg.subgraph(non_source_nodes)
+
+        subsets_encoded_to_int = {}     # for coloring
+
+        for node in subgraph.nodes:
+            subgraph.nodes[node]['keys'] = set(random.sample(sorted(self.key_pool), key_subset_size))
+            if self.encode_keys(subgraph.nodes[node]['keys']) not in subsets_encoded_to_int:
+                subsets_encoded_to_int[self.encode_keys(subgraph.nodes[node]['keys'])] = len(subsets_encoded_to_int)
+
+            subgraph.nodes[node]['v_color'] = subsets_encoded_to_int[self.encode_keys(subgraph.nodes[node]['keys'])]
 
     def reset_keys(self):
         for node in self.graph.nxg.nodes():
@@ -169,23 +189,25 @@ class KDC:
 
         return total_colors
 
+    def encode_keys(self, node_keys):
+        return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.key_pool_size)])
+
+    def decode_keys(self, encoded_keys):
+        return {f'k{i}' for i in range(self.key_pool_size) if encoded_keys[i] == '1'}
+
+    def hamming_distance(self, str1, str2):
+        return sum(c1 != c2 for c1, c2 in zip(str1, str2))
+
     def distribute_fix_num_keys_with_max_hamming_distance(self, key_subset_size: int):
         # Encode each node's key set into binary strings
-        def encode_keys(node_keys):
-            return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.key_pool_size)])
-
-        def decode_keys(encoded_keys):
-            return {f'k{i}' for i in range(self.key_pool_size) if encoded_keys[i] == '1'}
-
-        def hamming_distance(str1, str2):
-            return sum(c1 != c2 for c1, c2 in zip(str1, str2))
 
         if key_subset_size > self.key_pool_size:
             raise ValueError("key_subset_size cannot be larger than key_pool_size")
 
         possible_subsets = list(combinations(self.key_pool, key_subset_size))
-        possible_subsets_encoded = [encode_keys(key_subset) for key_subset in possible_subsets]
-        # print(f'possible subsets: {possible_subsets_encoded}\n')
+        # print(f'possible subsets: {possible_subsets}\n')
+        possible_subsets_encoded = [self.encode_keys(key_subset) for key_subset in possible_subsets]
+        # print(f'possible subsets encoded: {possible_subsets_encoded}\n')
 
         non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 'source']
         # subgraph can change attributes of the original graph, but can not change layout of the original graph
@@ -196,7 +218,7 @@ class KDC:
         sort_result = sorted(subgraph.degree, key=lambda x: x[1], reverse=True)
         nodes_degree_desc = [node for node, degree in sort_result]
 
-        subsets_encoded_to_int = {}
+        subsets_encoded_to_int = {}     # for coloring
 
         for node in nodes_degree_desc:
             max_hamming_distance_sum = 0
@@ -208,8 +230,8 @@ class KDC:
 
                 for neighbor in subgraph.neighbors(node):
                     if subgraph.nodes[neighbor]['keys'] is not None:
-                        neighbor_subset_encoded = encode_keys(subgraph.nodes[neighbor]['keys'])
-                        hamming_distance_sum += hamming_distance(subset_encoded, neighbor_subset_encoded)
+                        neighbor_subset_encoded = self.encode_keys(subgraph.nodes[neighbor]['keys'])
+                        hamming_distance_sum += self.hamming_distance(subset_encoded, neighbor_subset_encoded)
                         valid_neighbor += 1
                     else:
                         neighbor_subset_encoded = None
@@ -235,7 +257,7 @@ class KDC:
             if best_subset_encoded not in subsets_encoded_to_int:
                 subsets_encoded_to_int[best_subset_encoded] = len(subsets_encoded_to_int)
 
-            subgraph.nodes[node]['keys'] = decode_keys(best_subset_encoded)
+            subgraph.nodes[node]['keys'] = self.decode_keys(best_subset_encoded)
             subgraph.nodes[node]['v_color'] = subsets_encoded_to_int[best_subset_encoded]
 
         # print(f'color used: {len(subsets_encoded_to_int)}')
@@ -250,7 +272,7 @@ class KDC:
 
             hd_sum = 0
             for neighbor in subgraph.neighbors(node):
-                hd_sum += hamming_distance(encode_keys(subgraph.nodes[node]['keys']), encode_keys(subgraph.nodes[neighbor]['keys']))
+                hd_sum += self.hamming_distance(self.encode_keys(subgraph.nodes[node]['keys']), self.encode_keys(subgraph.nodes[neighbor]['keys']))
 
             if hd_sum != theo_max_hmd_sum:
                 improvable = False
@@ -309,7 +331,6 @@ class Attacker:
         subset_sizes = [i for i in range(1, self.kdc.key_pool_size)]
         # subset_sizes = [1, 2, 3, 4, 5]
 
-        # for num_compromised_nodes in tqdm(range(1, max_num_compromised_nodes + 1), desc='Overall Progress'):
         for num_compromised_nodes in range(1, max_num_compromised_nodes + 1):
             for subset_size in subset_sizes:
                 result = pd.DataFrame(columns=df_columns)
@@ -354,28 +375,35 @@ class Attacker:
                 result.to_csv(f'networkAnalysis/results/dpa_random_pos/csv_{distr_strategy}_{runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
 
 
-
-if __name__ == "__main__":
-    total_nodes = 10
-    key_pool_size = 8
-    max_num_compromised_nodes = 3
-    runs = 100000
-    # distr_strategy = 'max_hamming'  # 'random' or 'max_hamming'
-    distr_strategies = ['rd', 'mhd']
-
+def demo():
     g1 = NGraph()
-    # g1.generate_ws_graph(total_nodes)
-    g1.load_graph(f'graph_ws_12nodes.csv')
-    kdc = KDC(g1, key_pool_size)
-    attacker = Attacker(g1, kdc)
+    g1.restore_snapshot(f'graph_ws_12nodes.csv')
+
+    kdc = KDC(graph=g1, key_pool_size=8)
+    attacker = Attacker(graph=g1, kdc=kdc)
+
+    kdc.reset_keys()    # don't forget to reset keys before distributing new keys
+    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=3)
+    kdc.distribute_fix_num_keys_randomly(key_subset_size=3)
 
     g1.pick_path()
-    for distr_strategy in distr_strategies:
-        attacker.dpa_random_pos_on_path(runs, max_num_compromised_nodes, distr_strategy)
+    attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
+    g1.take_snapshot(filename='graph_temp2.csv')
+    g1.visualize()
 
-    # g1.visualize()
-    # g1.save_graph()
 
-    # attacker = Attacker(g, kdc)
+def run_simulation():
+    g1 = NGraph()
+    g1.restore_snapshot(f'graph_ws_12nodes.csv')
 
-    # g1.save_graph()
+    kdc = KDC(graph=g1, key_pool_size=8)
+    attacker = Attacker(graph=g1, kdc=kdc)
+
+    g1.pick_path()
+
+    for distr_strategy in ['rd', 'mhd']:
+        attacker.dpa_random_pos_on_path(runs=1000, max_num_compromised_nodes=3, distr_strategy=distr_strategy)
+
+
+if __name__ == "__main__":
+    demo()
