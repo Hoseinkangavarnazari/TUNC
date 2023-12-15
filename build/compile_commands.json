@@ -26,6 +26,11 @@
 },
 {
   "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/node.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/node.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/node.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
   "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/packet.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp",
   "file": "/home/akif/Documents/TUNC/TUNC/headers/src/packet.cpp"
 },
