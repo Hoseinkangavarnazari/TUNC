@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o.d"
   "CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o"
   "CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o.d"
+  "CMakeFiles/runner.out.dir/headers/src/node.cpp.o"
+  "CMakeFiles/runner.out.dir/headers/src/node.cpp.o.d"
   "CMakeFiles/runner.out.dir/headers/src/packet.cpp.o"
   "CMakeFiles/runner.out.dir/headers/src/packet.cpp.o.d"
   "CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o"

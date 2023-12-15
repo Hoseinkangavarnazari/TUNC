@@ -249,6 +249,30 @@ headers/src/mac_calculator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s
 .PHONY : headers/src/mac_calculator.cpp.s
 
+headers/src/node.o: headers/src/node.cpp.o
+.PHONY : headers/src/node.o
+
+# target to build an object file
+headers/src/node.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/node.cpp.o
+.PHONY : headers/src/node.cpp.o
+
+headers/src/node.i: headers/src/node.cpp.i
+.PHONY : headers/src/node.i
+
+# target to preprocess a source file
+headers/src/node.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/node.cpp.i
+.PHONY : headers/src/node.cpp.i
+
+headers/src/node.s: headers/src/node.cpp.s
+.PHONY : headers/src/node.s
+
+# target to generate assembly for a file
+headers/src/node.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/node.cpp.s
+.PHONY : headers/src/node.cpp.s
+
 headers/src/packet.o: headers/src/packet.cpp.o
 .PHONY : headers/src/packet.o
 
@@ -393,6 +417,9 @@ help:
 	@echo "... headers/src/mac_calculator.o"
 	@echo "... headers/src/mac_calculator.i"
 	@echo "... headers/src/mac_calculator.s"
+	@echo "... headers/src/node.o"
+	@echo "... headers/src/node.i"
+	@echo "... headers/src/node.s"
 	@echo "... headers/src/packet.o"
 	@echo "... headers/src/packet.i"
 	@echo "... headers/src/packet.s"
