@@ -42,75 +42,79 @@ function plot_3d_for_dpa_fix()
         set(h(i), 'ZData', zdata);
     end
 
-    % 设置图形尺寸并保存
     fig = gcf;
     fig.Position = [0, 0, 800, 600];
-    print(fig, '-dpng', sprintf('./dpa_fix/plot_3d_%druns.png', runs), '-r300');
+    print(fig, '-dpng', sprintf('./dpa_fix/plot_3d_%druns.png', runs), '-r00');
 end
 
 
 function plot_3d_for_dpa_random()
     runs = 100000;
-    max_subset_size = 8;
+    max_subset_size = 11;
     max_compromised_nodes = 3;
-
-    total_nodes = 12;
-
-    key_pool_size = max_subset_size + 1;
 
     success_ratio_matrix1 = zeros(max_subset_size, max_compromised_nodes);
     success_ratio_matrix2 = zeros(max_subset_size, max_compromised_nodes);
 
     for compromised_nodes = 1:max_compromised_nodes
         for keys = 1:max_subset_size
-            filename1 = sprintf('./results/dpa_random_pos/csv_mhd_%druns_%dc_%dkeys.csv', runs, compromised_nodes, keys);
-            filename2 = sprintf('./results/dpa_random_pos/csv_rd_%druns_%dc_%dkeys.csv', runs, compromised_nodes, keys);
+            filename1 = sprintf('./temp1/csv_mhd_n_our_%druns_%dc_%dkeys.csv', runs, compromised_nodes, keys);
+            filename2 = sprintf('./temp1/csv_rd_our_%druns_%dc_%dkeys.csv', runs, compromised_nodes, keys);
+            filename3 = sprintf('./temp1/csv_rd_other_%druns_%dc_%dkeys.csv', runs, compromised_nodes, keys);
+
             data1 = readtable(filename1);
             data2 = readtable(filename2);
+            data3 = readtable(filename3);
+
             success_count1 = sum(data1.is_success == 1);
             success_count2 = sum(data2.is_success == 1);
+            success_count3 = sum(data3.is_success == 1);
+
             success_ratios1 = success_count1 / runs;
             success_ratios2 = success_count2 / runs;
+            success_ratios3 = success_count3 / runs;
 
             success_ratio_matrix1(keys, compromised_nodes) = success_ratios1;
             success_ratio_matrix2(keys, compromised_nodes) = success_ratios2;
+            success_ratio_matrix3(keys, compromised_nodes) = success_ratios3;
         end
     end
 
-    subplot(1, 2, 1);
+    subplot(3, 1, 1);
     bar3(success_ratio_matrix1);
-
-    ax1 = gca;
-    set(ax1, 'ZScale', 'log');
-
+    set(gca(), 'ZScale', 'log');
     xlabel('Compromised Nodes');
     ylabel('Key Subset Size');
     zlabel('Success Ratio');
-    title(sprintf('%d runs (Max-Hamming Dist.) / key subset size / compromised nodes\n(Total Nodes = 12, Key Pool Size = 8)', runs));
-    view(-124, 16); % azimuth, elevation
+    title(sprintf('%d runs (Max-Hamming Dist. Our Attack Model) / key subset size / compromised nodes\n(Total Nodes = 10, Key Pool Size = 12)', runs));
+    view(83, 22); % azimuth, elevation
+    adjustZAxisForLogScale(runs)    % 调整 Z 轴数据以适应对数刻度
 
-    % 调整 Z 轴数据以适应对数刻度
+    subplot(3, 1, 2);
+    bar3(success_ratio_matrix2);
+    set(gca(), 'ZScale', 'log');
+    xlabel('Compromised Nodes');
+    ylabel('Key Subset Size');
+    zlabel('Success Ratio');
+    title(sprintf('%d runs (Random Dist. Our Attack Model) / key subset size / compromised nodes\n(Total Nodes = 10, Key Pool Size = 12)', runs));
+    view(83, 22); % azimuth, elevation
     adjustZAxisForLogScale(runs)
 
-    subplot(1, 2, 2);
-    bar3(success_ratio_matrix2);
-
-    ax2 = gca;
-    set(ax2, 'ZScale', 'log');
-
+    subplot(3, 1, 3);
+    bar3(success_ratio_matrix3);
+    set(gca(), 'ZScale', 'log');
     xlabel('Compromised Nodes');
     ylabel('Key Subset Size');
     zlabel('Success Ratio');
-    title(sprintf('%d runs (Random Dist.) / key subset size / compromised nodes\n(Total Nodes = 12, Key Pool Size = 8)', runs));
+    title(sprintf('%d runs (Random Dist. Other Attack Model) / key subset size / compromised nodes\n(Total Nodes = 10, Key Pool Size = 12)', runs));
     view(-124, 16); % azimuth, elevation
-
-    % 调整 Z 轴数据以适应对数刻度
     adjustZAxisForLogScale(runs)
 
     % 设置图形尺寸并保存
     fig = gcf;
-    fig.Position = [0, 0, 1200, 800];
-    print(fig, '-dpng', sprintf('./results/dpa_random_pos/plot_3d_%druns.png', runs), '-r500');
+    fig.Visible = 'off';
+    fig.Position = [0, 0, 500, 1000];
+    print(fig, '-dpng', sprintf('./temp1/plot_3d_%druns.png', runs), '-r300');
 
 end
 
