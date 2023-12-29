@@ -1,0 +1,39 @@
+@startuml
+title "Distruibute With Max-Hamming-Distance"
+
+start
+
+:assign //key_pool// to sources;
+#Aquamarine:create a empty set: //assigned_group//;
+
+while (have intermediate nodes unassigned?) is (yes)
+
+    if (is //assigned_group// empty?) then (yes)
+        :choose a node with maximal degree;
+    else (no)
+        partition #BurlyWood "find_neighbor_of_group\n_with_max_degree" {
+            :find all neighbors of //assigned_group//;
+            :choose the node with maximal\n degree among all neighbors;
+        }
+    endif
+
+    :denote this node as current node;
+
+    partition #DarkSeaGreen "pick_best_subset_new_first" {
+        ://subsets_with_max_hd// = All subsets that have a maximum sum\n of Hamming distances to all neighbours of the current node;
+        if (Are there subsets that\nhave never been used yet?) then (yes)
+            :choose one of them randomly;
+        else (no)
+            :choose one from //subsets_with_max_hd// randomly;
+        endif
+    }
+
+    :assign the subset to current node;
+    #Aquamarine:add this node to the //assigned_group//;
+
+endwhile (no)
+:finish assignment;
+
+stop
+
+@enduml

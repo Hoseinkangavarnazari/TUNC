@@ -1,0 +1,43 @@
+@startuml
+title Other Data Pollution Attack Model
+
+start
+
+#gold://is_success// = false;
+
+while (more compromised nodes?) is (yes)
+    :move to the compromised node on the path to the sink;
+    :inject the polluted packet;
+    #greenyellow://path_success// = true;
+    while (reach the sink?) is (no)
+        :move to the next node;
+        :d = The size of the difference between the set of keys\n owned by this node and //key_pool_compromised//;
+        if (d == 0?) then (yes)
+            :not detected;
+        (no, guess with <latex>\frac{1}{p^d}</latex>) elseif (correct?) then (yes)
+            :not detected;
+        else (no)
+            :detected;
+            #greenyellow://path_success// = false;
+            break
+        endif
+
+    endwhile (yes)
+
+    if (//path_success// ?) then (yes)
+        #gold://is_success// = true;
+        break
+    else (no)
+        :try another compromised node;
+    endif
+
+endwhile (no)
+
+if (//is_success// ?) then (yes)
+    :data pollution attack success;
+else (no)
+    :data pollution attack fail;
+endif
+
+stop
+@enduml

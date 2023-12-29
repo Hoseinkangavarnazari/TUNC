@@ -1,3 +1,8 @@
+import argparse
+import concurrent.futures
+import os
+import re
+
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
@@ -55,7 +60,7 @@ class NGraph:
         attrs = {node: self.nxg.nodes[node] for node in self.nxg.nodes}
         df_attrs = pd.DataFrame.from_dict(attrs, orient='index')
 
-        df_combined = pd.concat([df_rm, df_attrs], axis=1) # axis=1: concat by column
+        df_combined = pd.concat([df_rm, df_attrs], axis=1)   # axis=1: concat by column
         df_combined.to_csv(filename)
 
     def restore_snapshot(self, filename):
@@ -213,17 +218,7 @@ class KDC:
 
     def distribute_fix_num_keys_with_max_hamming_distance(self, key_subset_size: int, strategy='nf'):
         """
-        1. 找出 subgraph 中 degree 最大的节点作为第一个被分配的节点。
-        2. 调用 pick_best_subset_*()，为该节点分配一个 subset (keys)，并更新 key_usage。
-        3. 将该节点加入 assigned_group。
-        4. 调用 find_neighbor_of_group_with_max_degree()，获得下一个被分配的节点。
-        5. 重复 2-4，直到所有节点都被分配。
-
-        1. Find the node with the largest degree in the subgraph as the first node to be assigned.
-        2. call pick_best_subset_*(), assign a subset (keys) to that node, and update key_usage.
-        3. add the node to assigned_group.
-        4. call find_neighbor_of_group_with_max_degree() to get the next assigned node.
-        5. Repeat 2-4 until all nodes are assigned.
+        check uml diagram: dist_mh.png
         """
 
         if key_subset_size > self.key_pool_size:
@@ -260,8 +255,6 @@ class KDC:
 
         def find_subsets_with_max_hd_sum(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> List[str]:
             """
-            在 possible_subsets_encoded 中，找出能与所有 neighbors 有最大 hamming distance sum 的所有 subsets。
-
             In possible_subsets_encoded, find all subsets that have the maximum hamming distance sum to all neighbours.
             """
             max_hd_sum = -1
@@ -280,7 +273,7 @@ class KDC:
                 elif hd_sum == max_hd_sum:
                     subsets_with_max_hd.append(subset)
 
-            print(f'subsets_with_max_hd (hd_sum={hd_sum}, max_hd_sum={max_hd_sum}, total={len(subsets_with_max_hd)}): {subsets_with_max_hd}')
+            # print(f'subsets_with_max_hd (hd_sum={hd_sum}, max_hd_sum={max_hd_sum}, total={len(subsets_with_max_hd)}): {subsets_with_max_hd}')
             return subsets_with_max_hd
 
         def pick_best_subset_new_first(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> str:
@@ -300,9 +293,9 @@ class KDC:
 
             subsets_with_max_hd = find_subsets_with_max_hd_sum(g, node, possible_subsets_encoded)
             unused_subsets = [subset for subset in subsets_with_max_hd if subset not in self.used_key_subsets]
-            print(f'unused_subsets (total={len(unused_subsets)}): {unused_subsets}')
+            # print(f'unused_subsets (total={len(unused_subsets)}): {unused_subsets}')
             best_subset = random.choice(unused_subsets) if unused_subsets else random.choice(subsets_with_max_hd)
-            print(f'best_subset: {self.decode_keys(best_subset)}')
+            # print(f'best_subset: {self.decode_keys(best_subset)}')
             self.used_key_subsets.add(best_subset)
 
             return best_subset
@@ -335,14 +328,14 @@ class KDC:
             else:
                 node = find_neighbor_of_group_with_max_degree(subgraph, assigned_group)
 
-            print(f'Selected node: {node} (degree: {subgraph.degree[node]}, assigned_group: {assigned_group})')
+            # print(f'Selected node: {node} (degree: {subgraph.degree[node]}, assigned_group: {assigned_group})')
 
             if strategy == 'nf':
                 best_subset_encoded = pick_best_subset_new_first(subgraph, node, possible_subsets_encoded)
             elif strategy == 'avg':
                 best_subset_encoded = pick_best_subset_with_avg_keyusage(subgraph, node, possible_subsets_encoded)
 
-            print('\n')
+            # print('\n')
             subgraph.nodes[node]['keys'] = self.decode_keys(best_subset_encoded)
             assigned_group.add(node)
 
@@ -390,139 +383,255 @@ class Attacker:
             self.graph.nxg.nodes[node]['compromised'] = False
         self.key_pool_compromised.clear()
 
-    def dpa_random_pos_on_path(self, runs: int, max_num_compromised_nodes: int, distr_strategy: str, attack_model: str):
-        df_columns = ['compromised_nodes', 'is_success']
+    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, subset_size: int, num_compromised_nodes: int):
+        self.kdc.reset_keys()
 
-        subset_sizes = [i for i in range(1, self.kdc.key_pool_size)]
-        compromised_nodes = [i for i in range(1, max_num_compromised_nodes + 1)]
-        # subset_sizes = [2]
-        # compromised_nodes = [2]
+        if distr_strategy == 'rd':
+            self.kdc.distribute_fix_num_keys_randomly(subset_size)
+        elif distr_strategy == 'mhd_n':
+            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='nf')
+        elif distr_strategy == 'mhd_a':
+            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='avg')
 
-        for num_compromised_nodes in compromised_nodes:
-            for subset_size in subset_sizes:
-                result = pd.DataFrame(columns=df_columns)
-                for _ in tqdm(range(runs), desc=f'Running for c=({num_compromised_nodes}/{max_num_compromised_nodes}), keys=({subset_size}/{len(subset_sizes)})'):
-                # for _ in range(runs):
-                    self.kdc.reset_keys()
+        self.reset_comromised_status()
+        compromised_nodes = self.compromise_node_randomly_on_path(num_compromised_nodes)
 
-                    if distr_strategy == 'rd':
-                        self.kdc.distribute_fix_num_keys_randomly(subset_size)
-                    elif distr_strategy == 'mhd_n':
-                        self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='nf')
-                    elif distr_strategy == 'mhd_a':
-                        self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='avg')
+        is_success = None
 
-                    self.reset_comromised_status()
-                    compromised_nodes = self.compromise_node_randomly_on_path(num_compromised_nodes)
+        if attack_type == 'dpa':
+            if attack_model == 'other':
+                """
+                check uml diagram: other_dpa.png
+                """
 
-                    if attack_model == 'other':
-                        """
-                        1. 每个 compromised 节点都有一条路径，从 compromised 节点开始，到达 destination。只要有一条路径成功，整个攻击就被视为成功。
-                        2. 对于每条路径，从 compromised 节点开始，遍历之后的每一个节点。
-                        3. 如果当前节点的 keys 是所有 compromised 节点的 keys 的并集的子集，则视为 100% 猜测成功，继续下一个节点。
-                        4. 否则，用 d 表示两者的差集的大小。按照 random.randint(1, self.finite_field_size ** d) == 1 的概率决定是否猜测成功。
-                        5. 如果猜测成功，则继续下一个节点，否则停止遍历，并标记 is_success = 0。
+                is_success = 0  # assume the attack fails
 
-                        1. each compromised node has a path from the compromised node to the destination. as long as one of the paths succeeds, the entire attack is considered successful.
-                        2. for each path, start at the compromised node and traverse every node after it.
-                        3. If the keys of the current node are a subset of the concatenation of the keys of all compromised nodes, the guess is considered 100% successful and the attack continues to the next node.
-                        4. Otherwise, the size of the difference between the two is denoted by d. Decide if the guess is successful with probability random.randint(1, self.finite_field_size ** d) == 1.
-                        5. If the guess is successful, move on to the next node, otherwise stop the traversal and mark is_success = 0.
-                        """
+                for c_node in compromised_nodes:
+                    path_from_c = self.graph.picked_path[self.graph.picked_path.index(c_node):]
+                    path_success = 1  # assume the path succeeds
 
-                        is_success = 0  # 初始假设攻击失败
+                    for nd in path_from_c[1:]:  # Skip compromised node
+                        d = len(self.graph.nxg.nodes[nd]['keys'] - self.key_pool_compromised)
+                        if d == 0:
+                            continue
+                        elif random.randint(1, self.finite_field_size ** d) != 1:
+                            path_success = 0
+                            break
 
-                        for c_node in compromised_nodes:
-                            path_from_c = self.graph.picked_path[self.graph.picked_path.index(c_node):]
-                            path_success = 1  # 假设这条路径成功
+                    if path_success == 1:
+                        is_success = 1  # If at least one path succeeds, the entire attack succeeds
+                        break
 
-                            for nd in path_from_c[1:]:  # 跳过被攻击者控制的节点
-                                if self.graph.nxg.nodes[nd]['keys'] <= self.key_pool_compromised:
-                                    continue
-                                else:
-                                    d = len(self.graph.nxg.nodes[nd]['keys'] - self.key_pool_compromised)
-                                    if random.randint(1, self.finite_field_size ** d) != 1:
-                                        path_success = 0  # 这条路径攻击失败
-                                        break
+            elif attack_model == 'our':
+                """
+                check uml diagram: our_dpa.png
+                """
 
-                            if path_success == 1:
-                                is_success = 1  # 如果至少有一条路径成功，则整个攻击成功
+                is_success = 1
+                latest_compromised_node = next((node for node in self.graph.picked_path if self.graph.nxg.nodes[node]['compromised']), None)
+
+                for node in self.graph.picked_path[self.graph.picked_path.index(latest_compromised_node):]:
+                    if self.graph.nxg.nodes[node]['compromised']:
+                        latest_compromised_node = node
+                        # print(f'Reached compromised node {node}')
+                    else:
+                        d = len(self.graph.nxg.nodes[node]['keys'] - self.graph.nxg.nodes[latest_compromised_node]['keys'])
+                        if random.randint(1, self.finite_field_size ** d) != 1:
+                            # if random.randint(1, 4) == 1:
+                            is_success = 0
+                            # print(f'Failed at node {node}')
+                            break
+
+                        # print(f'Success at node {node}')
+
+        elif attack_type == 'tpa':
+            if attack_model == 'our':
+                """
+                check uml diagram: our_tpa.png
+                """
+
+                is_success = 1
+                compromised_key = None
+
+                first_c_node_index = next((i for i, node in enumerate(self.graph.picked_path) if self.graph.nxg.nodes[node]['compromised']), None)
+
+                for node in self.graph.picked_path[first_c_node_index:]:
+                    if self.graph.nxg.nodes[node]['compromised']:
+                        compromised_key = random.choice(list(self.kdc.key_pool))
+                    elif compromised_key in self.graph.nxg.nodes[node]['keys']:
+                        is_success = 0
+                        break
+
+            elif attack_model == 'other':
+                """
+                check uml diagram: other_tpa.png
+                """
+
+                is_success = 0
+
+                for c_node in compromised_nodes:
+                    path_from_c = self.graph.picked_path[self.graph.picked_path.index(c_node):]
+                    path_success = 1
+                    compromised_key = random.choice(list(self.kdc.key_pool))
+
+                    for nd in path_from_c[1:]:  # Skip compromised node
+                        if not self.graph.nxg.nodes[nd]['compromised']:
+                            if compromised_key in self.graph.nxg.nodes[nd]['keys']:
+                                path_success = 0
                                 break
 
-                    elif attack_model == 'our':
-                        """
-                        1. 找到 self.graph.picked_path 上从源节点开始碰到的第一个 compromised node，记为“最新 compromised node”。
-                        2. 遍历之后的每一个节点，如果当前节点未被 compromised，则比较当前节点的 keys 和最新 compromised node 的 keys，用 d 表示两者的差集的大小。并按照 random.randint(1, self.finite_field_size ** d) == 1 的概率决定是否猜测成功。
-                        3. 如果猜测成功，则继续下一个节点，否则停止遍历，并标记 is_success = 0。
-                        4. 如果当前节点是 compromised，则视为 100% 猜测成功，继续下一个节点，并更新最新 compromised node。
-                        5. 直到遍历完所有节点，或者 is_success = 0 时，停止遍历。
-
-                        1. find the first compromised node on self.graph.picked_path from the source node, denoted as "latest compromised node".
-                        2. Iterate through each node after that, if the current node is not compromised, compare the keys of the current node with the keys of the latest compromised node, and denote the size of the difference between the two with d. We decide whether the guess is successful according to the probability that random.randint(1, self.finite_field_size ** d) == 1.
-                        3. if the guess is successful, move on to the next node, otherwise stop the traversal and mark is_success = 0.
-                        4. If the current node is compromised, the guess is considered 100% successful, and the traversal continues to the next node, updating the latest compromised node.
-                        5. Stop traversing until all nodes have been traversed, or is_success = 0.
-                        """
-
+                    if path_success == 1:
                         is_success = 1
-                        latest_compromised_node = None
+                        break
 
-                        for node in self.graph.picked_path:
-                            if self.graph.nxg.nodes[node]['compromised']:
-                                latest_compromised_node = node
-                                # print(f'Reached compromised node {node}')
-                            elif latest_compromised_node is not None:
-                                d = len(self.graph.nxg.nodes[node]['keys'] - self.graph.nxg.nodes[latest_compromised_node]['keys'])
-                                if random.randint(1, self.finite_field_size ** d) != 1:
-                                # if random.randint(1, 4) == 1:
-                                    is_success = 0
-                                    # print(f'Failed at node {node}')
-                                    break
-
-                                # print(f'Success at node {node}')
-
-
-                    new_row = pd.DataFrame([[compromised_nodes, is_success]], columns=df_columns)
-                    result = pd.concat([result, new_row], ignore_index=True)
-
-                result.to_csv(f'networkAnalysis/temp1/csv_{distr_strategy}_{attack_model}_{runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
+        return compromised_nodes, is_success
 
 
 def demo():
     g1 = NGraph()
-    # g1.restore_snapshot(filename='10n2s.csv')
     g1.generate_ws_graph(num_nodes=12)
 
-    kdc = KDC(graph=g1, key_pool_size=8)
-    attacker = Attacker(graph=g1, kdc=kdc)
-
-    kdc.reset_keys()    # don't forget to reset keys before distributing new keys
-    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=4, strategy='nf')
-    kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=4, strategy='avg')
+    # kdc = KDC(graph=g1, key_pool_size=8)
+    # attacker = Attacker(graph=g1, kdc=kdc)
+    #
+    # kdc.reset_keys()    # don't forget to reset keys before distributing new keys
+    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=2, strategy='nf')
+    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=4, strategy='avg')
     # kdc.distribute_fix_num_keys_randomly(key_subset_size=3)
 
     g1.pick_path()
-    attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
-    g1.take_snapshot(filename='temp.csv')
+    # attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
+    g1.take_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/temp.csv')
     g1.visualize()
 
 
-def run_simulation():
+def run_simulation(batch, batch_runs):
     g1 = NGraph()
-    g1.restore_snapshot(filename='10n2s.csv')
+    g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
 
-    kdc = KDC(graph=g1, key_pool_size=12)
+    m_result_folder = None
+    m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/tpa10w'
+    m_key_pool_size = 12
+    m_max_num_compromised_nodes = 3
+
+    kdc = KDC(graph=g1, key_pool_size=m_key_pool_size)
     attacker = Attacker(graph=g1, kdc=kdc)
 
     g1.pick_path()
 
-    # attacker.dpa_random_pos_on_path(runs=1, max_num_compromised_nodes=2, distr_strategy='mhd_n', attack_model='our')
+    m_attack_type = 'tpa'       # tpa | dpa
+    m_distr_strategy = 'mhd_n'  # rd | mhd_n | mhd_a
+    m_attack_model = 'other'      # our | other
 
-    for distr_strategy in ['rd', 'mhd_n', 'mhd_a']:
-        for attack_model in ['our', 'other']:
-            attacker.dpa_random_pos_on_path(runs=100000, max_num_compromised_nodes=3, distr_strategy=distr_strategy, attack_model=attack_model)
+    compromised_node_options = [i for i in range(1, m_max_num_compromised_nodes + 1)]
+    subset_size_options = [i for i in range(1, kdc.key_pool_size)]
 
-    # g1.visualize()
+    compromised_node_options = [3]
+    subset_size_options = [5, 6]
+
+    if m_result_folder is not None:
+        os.makedirs(m_result_folder, exist_ok=True)
+
+    m_runs = batch_runs * 10000
+    for num_compromised_nodes in compromised_node_options:
+        for subset_size in subset_size_options:
+            results = []
+            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{m_max_num_compromised_nodes}), keys=({subset_size}/{len(subset_size_options)})'):
+                compromised_nodes, is_success = attacker.run_single_attack(m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes)
+                results.append([compromised_nodes, is_success])
+
+            if m_result_folder is not None:
+                result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success'])
+                result.to_csv(f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
+
+
+# def run_simulation_parallel():
+#     g1 = NGraph()
+#     g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
+#
+#     m_result_folder = None
+#     m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/ppp'
+#     m_key_pool_size = 12
+#     m_runs = 10
+#     m_max_num_compromised_nodes = 3
+#
+#     kdc = KDC(graph=g1, key_pool_size=m_key_pool_size)
+#     attacker = Attacker(graph=g1, kdc=kdc)
+#
+#     g1.pick_path()
+#
+#     m_attack_type = 'tpa'       # tpa | dpa
+#     m_distr_strategy = 'mhd_n'  # rd | mhd_n | mhd_a
+#     m_attack_model = 'our'      # our | other
+#
+#     cores = 4  # Number of cores on Apple M2
+#     partitioned_runs = m_runs // cores
+#
+#     if m_result_folder is not None:
+#         os.makedirs(m_result_folder, exist_ok=True)
+#
+#     for num_compromised_nodes in range(1, m_max_num_compromised_nodes + 1):
+#         for subset_size in range(1, kdc.key_pool_size):
+#             with concurrent.futures.ProcessPoolExecutor(max_workers=cores) as executor:
+#                 futures = [executor.submit(wraper_run_single_attack, attacker, m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes) for _ in range(partitioned_runs)]
+#                 results = []
+#
+#                 for future in concurrent.futures.as_completed(futures):
+#                     results.append(future.result())
+#
+#             if m_result_folder is not None:
+#                 result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success'])
+#                 result.to_csv(f'{m_result_folder}/csv_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
+#
+#
+# def wraper_run_single_attack(attacker, m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes):
+#     compromised_nodes, is_success = attacker.run_single_attack(m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes)
+#     return [compromised_nodes, is_success]
+
+
+def merge_batches(attacker_type, distr_strategy, attack_model, num_compromised_nodes, subset_size):
+    result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/tpa10w'
+
+    # List to store dataframes from all batches.
+    dfs = []
+    count_runs = 0
+
+    for file in os.listdir(result_folder):
+        # Check for required elements in the file name.
+        if re.match(r"csv\d+_", file) and file.endswith(".csv") and all(x in file for x in [attacker_type, distr_strategy, attack_model, f'{num_compromised_nodes}c', f'{subset_size}keys']):
+
+            # Extract the number of runs from the file name.
+            match = re.search(r'(\d+)runs', file)
+            if match:
+                runs_in_file = int(match.group(1))
+                count_runs += runs_in_file
+
+            df = pd.read_csv(os.path.join(result_folder, file))
+            dfs.append(df)
+
+    if not dfs:
+        return
+
+    # Combine all dataframes.
+    combined_df = pd.concat(dfs, ignore_index=True)
+
+    # Generate the combined CSV file name.
+    combined_csv_name = f'csv_{attacker_type}_{distr_strategy}_{attack_model}_{count_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv'
+    combined_df.to_csv(os.path.join(result_folder, combined_csv_name), index=False)
+    print(f'Combined {len(dfs)} CSV files into {combined_csv_name}')
 
 if __name__ == "__main__":
-    demo()
+    # demo()
+
+    for attacker_type in ['tpa', 'dpa']:
+        for distr_strategy in ['rd', 'mhd_n', 'mhd_a']:
+            for attack_model in ['our', 'other']:
+                for num_compromised_nodes in range(1, 4):
+                    for subset_size in range(1, 12):
+                        merge_batches(attacker_type, distr_strategy, attack_model, num_compromised_nodes, subset_size)
+
+    # parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
+    # parser.add_argument('batch', type=int, help='Batch number for the simulation')
+    # parser.add_argument('batch_runs', type=int, help='Number of runs in the batch (* 100000)')
+    # args = parser.parse_args()
+    # run_simulation(batch=args.batch, batch_runs=args.batch_runs)      # for example, python3 pr_new.py 1 1

@@ -1,0 +1,37 @@
+@startuml
+title Our Data Pollution Attack Model
+
+start
+
+:move to the first compromised node on the selected path;
+:denote it as "latest" compromised node;
+:forge MACs based on the keys it owns;
+#gold://is_success// = true;
+
+while (reach the sink?) is (no)
+    :move to the next node;
+    if (compromised?) then (no)
+        :d = size of the difference set between the key\nowned by this node and the key owned by\n"latest" compromised node;
+        :guess with <latex>\frac{1}{p^d}</latex>;
+        if (correct?) then (yes)
+            :not detected;
+        else (no)
+            :detected;
+            #gold://is_success// = false;
+            break
+        endif
+    else (yes)
+        :update "latest" compromised node;
+        :forge MACs based on the keys it owns;
+    endif
+
+endwhile (yes)
+
+if (//is_success// ?) then (yes)
+    :data pollution attack success;
+else (no)
+    :data pollution attack fail;
+endif
+
+stop
+@enduml

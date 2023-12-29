@@ -1,0 +1,15 @@
+@startuml
+title Simulation Logic
+
+start
+:create a network;
+:pick a path from source to sink;
+repeat
+    :distribute keys;
+    :choose compromised nodes on the path randomly;
+    :launch attacks;
+    :get results;
+backward: run 1000 times;
+repeat while ()
+stop
+@enduml

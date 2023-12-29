@@ -1,0 +1,13 @@
+,0,1,2,3,4,5,6,7,8,9,10,11,node_type,compromised,keys
+0,0,1,1,0,0,0,0,0,0,0,1,1,intermediate,True,"{'k4', 'k1'}"
+1,1,0,1,0,0,1,0,0,1,0,0,1,intermediate,False,"{'k5', 'k6'}"
+2,1,1,0,0,1,0,0,1,0,0,0,0,destination,False,"{'k7', 'k2'}"
+3,0,0,0,0,0,0,0,0,1,0,1,1,source,False,"{'k3', 'k2', 'k0', 'k4', 'k5', 'k7', 'k6', 'k1'}"
+4,0,0,1,0,0,1,0,0,0,0,1,1,intermediate,False,"{'k5', 'k3'}"
+5,0,1,0,0,1,0,1,1,0,0,0,0,intermediate,False,"{'k7', 'k0'}"
+6,0,0,0,0,0,1,0,0,1,1,0,0,intermediate,False,"{'k6', 'k3'}"
+7,0,0,1,0,0,1,0,0,1,1,0,0,intermediate,False,"{'k3', 'k1'}"
+8,0,1,0,1,0,0,1,1,0,0,0,0,intermediate,True,"{'k4', 'k0'}"
+9,0,0,0,0,0,0,1,1,0,0,1,1,intermediate,False,"{'k5', 'k7'}"
+10,1,0,0,1,1,0,0,0,0,1,0,0,intermediate,False,"{'k6', 'k2'}"
+11,1,1,0,1,1,0,0,0,0,1,0,0,intermediate,False,"{'k2', 'k0'}"

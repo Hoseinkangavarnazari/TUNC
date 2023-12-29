@@ -1,0 +1,34 @@
+@startuml
+title "Our Tag Pollution Attack Model"
+
+start
+
+:move to the first compromised node on the path;
+:select a compromised key from the //key_pool// randomly;
+#gold://is_success// = true;
+
+while (reach the sink?) is (no)
+    :move to the next node;
+    if (compromised?) then (yes)
+        :select a compromised key\nfrom the //key_pool// randomly;
+    else (no)
+        if (compromised key in the key subset?) then (yes)
+            :detected;
+            #gold://is_success// = false;
+            break
+        else (no)
+            :not detected;
+        endif
+    endif
+
+endwhile (yes)
+
+if (//is_success// ?) then (yes)
+    :tag pollution attack success;
+else (no)
+    :tag pollution attack fail;
+endif
+
+stop
+
+@enduml
