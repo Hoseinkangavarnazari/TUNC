@@ -369,6 +369,30 @@ headers/src/sign_calculator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/sign_calculator.cpp.s
 .PHONY : headers/src/sign_calculator.cpp.s
 
+headers/src/tree_alg.o: headers/src/tree_alg.cpp.o
+.PHONY : headers/src/tree_alg.o
+
+# target to build an object file
+headers/src/tree_alg.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/tree_alg.cpp.o
+.PHONY : headers/src/tree_alg.cpp.o
+
+headers/src/tree_alg.i: headers/src/tree_alg.cpp.i
+.PHONY : headers/src/tree_alg.i
+
+# target to preprocess a source file
+headers/src/tree_alg.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/tree_alg.cpp.i
+.PHONY : headers/src/tree_alg.cpp.i
+
+headers/src/tree_alg.s: headers/src/tree_alg.cpp.s
+.PHONY : headers/src/tree_alg.s
+
+# target to generate assembly for a file
+headers/src/tree_alg.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/tree_alg.cpp.s
+.PHONY : headers/src/tree_alg.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -432,6 +456,9 @@ help:
 	@echo "... headers/src/sign_calculator.o"
 	@echo "... headers/src/sign_calculator.i"
 	@echo "... headers/src/sign_calculator.s"
+	@echo "... headers/src/tree_alg.o"
+	@echo "... headers/src/tree_alg.i"
+	@echo "... headers/src/tree_alg.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
