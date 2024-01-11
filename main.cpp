@@ -101,9 +101,9 @@ int main()
   //std::vector<uint8_t> private_key = {5, 4, 3, 2, 1, 67, 89, 12, 23, 33, 234};
 
   std::vector<uint8_t> MACs;
-  uint8_t currentsign;
+  //uint8_t currentsign;
   // uint8_t c_sign;
-  uint8_t sign;
+  //uint8_t sign;
   // Create a directed graph with 4 nodes
   //  Graph myGraph(4);
   // std::vector<uint8_t> cs2 = {7, 4, 2};
@@ -125,8 +125,8 @@ int main()
   int maxPacketSize = 21;
   int packetStep = 2;
   int generationSize = 5;
-  int minMACSize = 5;
-  int maxMACSize = 21;
+  int minMACSize = 2;
+  int maxMACSize = 23;
   int MACStep = 5;
 
   // change the file name based on the given steup
@@ -180,8 +180,20 @@ int main()
         // start the timer
         auto start = std::chrono::high_resolution_clock::now();
         // check the integrity
+        p1.macCalculator();
+        std::cout << "here";
+        p1.signCalculator();
+        std::cout << "here";
+        p1.packetAppender();
+        std::cout << "here";
         p1.macVerifier();
+        std::cout << "here";
         p1.signVerifier();
+        //p1.signVerifier();
+
+
+        std::cout << "here";
+
         // stop the timer
         auto end = std::chrono::high_resolution_clock::now();
         // stop-start

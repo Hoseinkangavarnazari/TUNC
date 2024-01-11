@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdint> // for uint8_t
-#include "hpacket.h"   // Include your tud.h header
+#include "hpacket.h"   
 
 // Define a struct to represent the input type
 struct NodeInput {

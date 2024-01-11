@@ -3,7 +3,7 @@ from pyfinite import ffield
 F = ffield.FField(8)
 
 
-print(F.Multiply(28,3))
+print(F.Multiply(242,9))
 
 
 #for i in range(0, 255):
