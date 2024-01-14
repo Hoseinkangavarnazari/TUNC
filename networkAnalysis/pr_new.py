@@ -1,7 +1,5 @@
 import argparse
-import concurrent.futures
 import os
-import re
 
 import networkx as nx
 import random
@@ -39,12 +37,12 @@ class NGraph:
         while self.nxg.has_edge(source, sink):
             source, sink = random.sample(nodes_list, 2)
 
-        self.nxg.nodes[source]['node_type'] = 'source'
-        self.nxg.nodes[sink]['node_type'] = 'destination'
+        self.nxg.nodes[source]['node_type'] = 's'
+        self.nxg.nodes[sink]['node_type'] = 't'
 
         for node in self.nxg.nodes:
             if self.nxg.nodes[node]['node_type'] is None:
-                self.nxg.nodes[node]['node_type'] = 'intermediate'
+                self.nxg.nodes[node]['node_type'] = 'r'
 
     def take_snapshot(self, filename=None):
         """
@@ -87,25 +85,26 @@ class NGraph:
 
     def reset_node_attrs(self):
         for node in self.nxg.nodes:
-            self.nxg.nodes[node]['node_type']: str = None
+            self.nxg.nodes[node]['node_type']: str = None           # s: source, t: sink, r: relay
             self.nxg.nodes[node]['compromised']: bool = False
             self.nxg.nodes[node]['keys']: Set[str] = None
 
     def visualize(self):
 
-        source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 'source'][0]
+        source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 's'][0]
         key_pool_size = len(self.nxg.nodes[source]['keys']) if self.nxg.nodes[source]['keys'] is not None else 0
-        non_source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') != 'source'][0]
-        subset_size = len(self.nxg.nodes[non_source]['keys']) if self.nxg.nodes[non_source]['keys'] is not None else 0
-        all_combinations = factorial(key_pool_size) // (factorial(subset_size) * factorial(key_pool_size - subset_size))    # nCr; factorial: 5! = 5*4*3*2*1
+        non_source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') != 's'][0]
+        r_keyset_size = len(self.nxg.nodes[non_source]['keys']) if self.nxg.nodes[non_source]['keys'] is not None else 0
 
-        used_key_subsets = set()
+        all_combinations = factorial(key_pool_size) // (factorial(r_keyset_size) * factorial(key_pool_size - r_keyset_size))    # nCr; factorial: 5! = 5*4*3*2*1
+
+        used_r_keysets = set()
         for node in self.nxg.nodes:
             keys = self.nxg.nodes[node]['keys']
-            used_key_subsets.add(frozenset(keys)) if keys is not None else None
+            used_r_keysets.add(frozenset(keys)) if keys is not None else None
 
-        colors = [plt.cm.tab20(i) for i in np.linspace(0, 1, len(used_key_subsets))]
-        colors_map = {subset: color for subset, color in zip(used_key_subsets, colors)}   # zip: combine two lists into a dictionary
+        colors = [plt.cm.tab20(i) for i in np.linspace(0, 1, len(used_r_keysets))]
+        colors_map = {r_keyset: color for r_keyset, color in zip(used_r_keysets, colors)}   # zip: combine two lists into a dictionary
 
         node_sizes = {}
         node_labels = {}
@@ -114,7 +113,7 @@ class NGraph:
         for node in self.nxg.nodes:
             node_type = self.nxg.nodes[node]['node_type']
 
-            if node_type in ['source', 'destination']:
+            if node_type in ['s', 't']:
                 node_sizes[node] = 1000
             elif self.nxg.nodes[node]['compromised']:
                 node_sizes[node] = 800
@@ -152,14 +151,14 @@ class NGraph:
 
         nx.draw_networkx_labels(self.nxg, pos, labels=node_labels)
 
-        plt.title(f'Network with {self.nxg.number_of_nodes() - 1} non-source nodes\nColors Used={len(used_key_subsets)-1}/{all_combinations} (source excluded), Key Pool Size={key_pool_size}')
+        plt.title(f'Network with {self.nxg.number_of_nodes() - 1} non-source nodes\nColors Used={len(used_r_keysets)-1}/{all_combinations} (source excluded), Key Pool Size={key_pool_size}')
         plt.axis('off')
         plt.show()
         plt.close()
 
     def pick_path(self):
-        sources = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 'source']
-        destinations = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 'destination']
+        sources = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 's']
+        destinations = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 't']
 
         if not sources or not destinations:
             raise ValueError("Source or destination not found in the graph")
@@ -179,60 +178,74 @@ class KDC:
     Key Distribution Center
     """
 
-    def __init__(self, graph: NGraph, key_pool_size: int):
+    def __init__(self, graph: NGraph):
         self.graph = graph
-        self.key_pool_size = key_pool_size
-        self.key_pool: Set[str] = {f"k{i}" for i in range(key_pool_size)}
-        self.key_usage: Dict[str, int] = {f"k{i}": 0 for i in range(key_pool_size)}
-        self.used_key_subsets: Set[str] = set()
+        self.key_pool_size = None
+        self.key_pool = None
+        self.used_r_keysets: Set[str] = set()
 
-    def distribute_fix_num_keys_randomly(self, key_subset_size: int):
+    def set_key_pool_size(self, key_pool_size: int):
+        self.key_pool_size = key_pool_size
+        self.key_pool = {f'k{i}' for i in range(self.key_pool_size)}
+
+    def get_key_pool_size(self) -> int:
+        if self.key_pool_size is None:
+            raise ValueError("key_pool_size is not set")
+        return self.key_pool_size
+
+    def get_key_pool(self) -> Set[str]:
+        if self.key_pool_size is None:
+            raise ValueError("key_pool_size is not set")
+        return self.key_pool
+
+    def distribute_fix_num_keys_randomly(self, r_keyset_size: int, s_keyset_size: int):
         """
         Distributes a fixed number of keys randomly to each non-source node.
         """
 
-        if key_subset_size > self.key_pool_size:
-            raise ValueError("key_subset_size cannot be larger than key_pool_size")
+        self.set_key_pool_size(s_keyset_size)
 
-        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 'source']
+        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
         for node in source_nodes:
             self.graph.nxg.nodes[node]['keys'] = self.key_pool.copy()
 
-        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 'source']
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
         subgraph = self.graph.nxg.subgraph(non_source_nodes)
         for node in subgraph.nodes:
-            subgraph.nodes[node]['keys'] = set(random.sample(sorted(self.key_pool), key_subset_size))
+            subgraph.nodes[node]['keys'] = set(random.sample(sorted(self.key_pool), r_keyset_size))
+
+    def distribute_keys_with_cover_free_family(self, r_keyset_size: int, s_keyset_size: int):
+        pass
 
     def reset_keys(self):
         for node in self.graph.nxg.nodes():
             self.graph.nxg.nodes[node]['keys'] = None
 
     def encode_keys(self, node_keys):
-        return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.key_pool_size)])
+        return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.get_key_pool_size())])
 
     def decode_keys(self, encoded_keys):
-        return {f'k{i}' for i in range(self.key_pool_size) if encoded_keys[i] == '1'}
+        return {f'k{i}' for i in range(self.get_key_pool_size()) if encoded_keys[i] == '1'}
 
     def hamming_distance(self, str1, str2):
         return sum(c1 != c2 for c1, c2 in zip(str1, str2))
 
-    def distribute_fix_num_keys_with_max_hamming_distance(self, key_subset_size: int, strategy='nf'):
+    def distribute_fix_num_keys_with_max_hamming_distance(self, r_keyset_size: int, s_keyset_size: int, strategy='nf'):
         """
         check uml diagram: dist_mh.png
         """
 
-        if key_subset_size > self.key_pool_size:
-            raise ValueError("key_subset_size cannot be larger than key_pool_size")
+        self.set_key_pool_size(s_keyset_size)
 
-        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 'source']
+        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
         for node in source_nodes:
             self.graph.nxg.nodes[node]['keys'] = self.key_pool.copy()
 
-        possible_subsets = list(combinations(self.key_pool, key_subset_size))
-        possible_subsets_encoded = [self.encode_keys(key_subset) for key_subset in possible_subsets]
+        possible_r_keysets = list(combinations(self.key_pool, r_keyset_size))
+        possible_r_keysets_encoded = [self.encode_keys(keyset) for keyset in possible_r_keysets]
 
         # subgraph can change attributes of the original graph, but can not change layout of the original graph
-        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 'source']
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
         subgraph = self.graph.nxg.subgraph(non_source_nodes)
 
         def find_neighbor_of_group_with_max_degree(g: nx.Graph, group: Set[int]) -> int:
@@ -253,73 +266,68 @@ class KDC:
 
             return None
 
-        def find_subsets_with_max_hd_sum(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> List[str]:
+        def find_r_keysets_with_max_hd_sum(g: nx.Graph, node: int, possible_r_keysets_encoded: List[str]) -> List[str]:
             """
-            In possible_subsets_encoded, find all subsets that have the maximum hamming distance sum to all neighbours.
+            In possible_r_keysets_encoded, find all subsets that have the maximum hamming distance sum to all neighbours.
             """
             max_hd_sum = -1
-            subsets_with_max_hd = []
+            r_keysets_with_max_hd = []
 
-            for subset in possible_subsets_encoded:
+            for keyset in possible_r_keysets_encoded:
                 hd_sum = 0
 
                 for neighbor in g.neighbors(node):
                     if g.nodes[neighbor]['keys'] is not None:
-                        hd_sum += self.hamming_distance(subset, self.encode_keys(g.nodes[neighbor]['keys']))
+                        hd_sum += self.hamming_distance(keyset, self.encode_keys(g.nodes[neighbor]['keys']))
 
                 if hd_sum > max_hd_sum:
                     max_hd_sum = hd_sum
-                    subsets_with_max_hd = [subset]
+                    r_keysets_with_max_hd = [keyset]
                 elif hd_sum == max_hd_sum:
-                    subsets_with_max_hd.append(subset)
+                    r_keysets_with_max_hd.append(keyset)
 
             # print(f'subsets_with_max_hd (hd_sum={hd_sum}, max_hd_sum={max_hd_sum}, total={len(subsets_with_max_hd)}): {subsets_with_max_hd}')
-            return subsets_with_max_hd
+            return r_keysets_with_max_hd
 
-        def pick_best_subset_new_first(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> str:
+        def pick_best_r_keyset_new_first(g: nx.Graph, node: int, possible_r_keysets_encoded: List[str]) -> str:
             """
-            1. 对于节点 keys 为 None 的情况，视与其汉明距离为 0.
-            2. 调用 find_subsets_with_max_hd_sum() 获得备选 subsets。
-            3. 在备选 subsets 中，选出还未被使用过的 subsets，作为新的备选 subsets。如果全都使用过，则随机选择一个 subset 返回。
-            4. 在新的备选 subsets 中，随机选择一个 subset 返回。
-
             1. for the case where node keys is None, treat the distance to the Hamming as 0.
             2. call find_subsets_with_max_hd_sum() to get possible subsets.
             3. among the possible subsets, select the unused subsets as the new possible subsets, if all of them have been used, select a subset randomly and return it.
             4. choose a random subset among the new possible subsets and return it.
             """
 
-            # TODO: When subset_size = 1/2 * key_pool_size, there is a situation where neighbouring nodes are identical. The reason is to maximise max_hd_sum.
+            # TODO: When r_keyset_size = 1/2 * key_pool_size, there is a situation where neighbouring nodes are identical. The reason is to maximise max_hd_sum.
 
-            subsets_with_max_hd = find_subsets_with_max_hd_sum(g, node, possible_subsets_encoded)
-            unused_subsets = [subset for subset in subsets_with_max_hd if subset not in self.used_key_subsets]
+            r_keysets_with_max_hd = find_r_keysets_with_max_hd_sum(g, node, possible_r_keysets_encoded)
+            unused_r_keysets = [keyset for keyset in r_keysets_with_max_hd if keyset not in self.used_r_keysets]
             # print(f'unused_subsets (total={len(unused_subsets)}): {unused_subsets}')
-            best_subset = random.choice(unused_subsets) if unused_subsets else random.choice(subsets_with_max_hd)
+            best_r_keyset = random.choice(unused_r_keysets) if unused_r_keysets else random.choice(r_keysets_with_max_hd)
             # print(f'best_subset: {self.decode_keys(best_subset)}')
-            self.used_key_subsets.add(best_subset)
+            self.used_r_keysets.add(best_r_keyset)
 
-            return best_subset
+            return best_r_keyset
 
-        def pick_best_subset_with_avg_keyusage(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> str:
-            """
-            1. for the case where node keys is None, treat the distance to the Hamming as 0.
-            2. call find_subsets_with_max_hd_sum() to get possible subsets.
-            3. among the alternative subsets, choose the subset with the most even key_usage (so that each key is used as many times as possible)
-
-            The method was not effective. It was not used in the simulation!
-            """
-
-            subsets_with_max_hd = find_subsets_with_max_hd_sum(g, node, possible_subsets_encoded)
-            best_subset = min(subsets_with_max_hd, key=lambda x: max(self.key_usage[key] for key in self.decode_keys(x)))
-
-            # print(f'best_subset: {self.decode_keys(best_subset)}')
-
-            for key in self.decode_keys(best_subset):
-                self.key_usage[key] += 1
-
-            # print(f'key_usage: {self.key_usage}\n')
-
-            return best_subset
+        # def pick_best_subset_with_avg_keyusage(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> str:
+        #     """
+        #     1. for the case where node keys is None, treat the distance to the Hamming as 0.
+        #     2. call find_subsets_with_max_hd_sum() to get possible subsets.
+        #     3. among the alternative subsets, choose the subset with the most even key_usage (so that each key is used as many times as possible)
+        #
+        #     The method was not effective. It was not used in the simulation!
+        #     """
+        #
+        #     subsets_with_max_hd = find_r_keysets_with_max_hd_sum(g, node, possible_subsets_encoded)
+        #     best_subset = min(subsets_with_max_hd, key=lambda x: max(self.key_usage[key] for key in self.decode_keys(x)))
+        #
+        #     # print(f'best_subset: {self.decode_keys(best_subset)}')
+        #
+        #     for key in self.decode_keys(best_subset):
+        #         self.key_usage[key] += 1
+        #
+        #     # print(f'key_usage: {self.key_usage}\n')
+        #
+        #     return best_subset
 
         assigned_group = set()
         while len(assigned_group) < len(subgraph.nodes):
@@ -331,12 +339,12 @@ class KDC:
             # print(f'Selected node: {node} (degree: {subgraph.degree[node]}, assigned_group: {assigned_group})')
 
             if strategy == 'nf':
-                best_subset_encoded = pick_best_subset_new_first(subgraph, node, possible_subsets_encoded)
-            elif strategy == 'avg':
-                best_subset_encoded = pick_best_subset_with_avg_keyusage(subgraph, node, possible_subsets_encoded)
+                best_r_keyset_encoded = pick_best_r_keyset_new_first(subgraph, node, possible_r_keysets_encoded)
+            # elif strategy == 'avg':
+            #     best_subset_encoded = pick_best_subset_with_avg_keyusage(subgraph, node, possible_subsets_encoded)
 
             # print('\n')
-            subgraph.nodes[node]['keys'] = self.decode_keys(best_subset_encoded)
+            subgraph.nodes[node]['keys'] = self.decode_keys(best_r_keyset_encoded)
             assigned_group.add(node)
 
 
@@ -361,7 +369,8 @@ class Attacker:
 
         for node in compromised_nodes:
             self.graph.nxg.nodes[node]['compromised'] = True
-            self.key_pool_compromised.update(self.graph.nxg.nodes[node]['keys'])
+            if self.graph.nxg.nodes[node]['keys'] is not None:
+                self.key_pool_compromised.update(self.graph.nxg.nodes[node]['keys'])
 
         return compromised_nodes
 
@@ -372,7 +381,7 @@ class Attacker:
 
         if node not in self.graph.nxg.nodes:
             raise ValueError("Node not found in the graph")
-        elif self.graph.nxg.nodes[node]['node_type'] != 'intermediate':
+        elif self.graph.nxg.nodes[node]['node_type'] != 'r':
             raise ValueError("Node is not an intermediate node")
 
         self.graph.nxg.nodes[node]['compromised'] = True
@@ -383,15 +392,13 @@ class Attacker:
             self.graph.nxg.nodes[node]['compromised'] = False
         self.key_pool_compromised.clear()
 
-    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, subset_size: int, num_compromised_nodes: int):
+    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, r_keyset_size: int, s_keyset_size: int, num_compromised_nodes: int) -> Tuple[List[int], int]:
         self.kdc.reset_keys()
 
         if distr_strategy == 'rd':
-            self.kdc.distribute_fix_num_keys_randomly(subset_size)
+            self.kdc.distribute_fix_num_keys_randomly(r_keyset_size, s_keyset_size)
         elif distr_strategy == 'mhd_n':
-            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='nf')
-        elif distr_strategy == 'mhd_a':
-            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(subset_size, strategy='avg')
+            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(r_keyset_size, s_keyset_size, strategy='nf')
 
         self.reset_comromised_status()
         compromised_nodes = self.compromise_node_randomly_on_path(num_compromised_nodes)
@@ -433,16 +440,11 @@ class Attacker:
                 for node in self.graph.picked_path[self.graph.picked_path.index(latest_compromised_node):]:
                     if self.graph.nxg.nodes[node]['compromised']:
                         latest_compromised_node = node
-                        # print(f'Reached compromised node {node}')
                     else:
                         d = len(self.graph.nxg.nodes[node]['keys'] - self.graph.nxg.nodes[latest_compromised_node]['keys'])
                         if random.randint(1, self.finite_field_size ** d) != 1:
-                            # if random.randint(1, 4) == 1:
                             is_success = 0
-                            # print(f'Failed at node {node}')
                             break
-
-                        # print(f'Success at node {node}')
 
         elif attack_type == 'tpa':
             if attack_model == 'our':
@@ -490,148 +492,77 @@ class Attacker:
 def demo():
     g1 = NGraph()
     g1.generate_ws_graph(num_nodes=12)
-
-    # kdc = KDC(graph=g1, key_pool_size=8)
-    # attacker = Attacker(graph=g1, kdc=kdc)
-    #
-    # kdc.reset_keys()    # don't forget to reset keys before distributing new keys
-    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=2, strategy='nf')
-    # kdc.distribute_fix_num_keys_with_max_hamming_distance(key_subset_size=4, strategy='avg')
-    # kdc.distribute_fix_num_keys_randomly(key_subset_size=3)
-
     g1.pick_path()
-    # attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
-    g1.take_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/temp.csv')
+    # g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
+
+    kdc = KDC(graph=g1)
+    kdc.reset_keys()    # don't forget to reset keys before distributing new keys
+    # kdc.distribute_fix_num_keys_with_max_hamming_distance(r_keyset_size=2, s_keyset_size=12, strategy='nf')
+    # kdc.distribute_fix_num_keys_randomly(r_keyset_size=3, s_keyset_size=12)
+
+
+    attacker = Attacker(graph=g1, kdc=kdc)
+    attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
+
+    g1.take_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/onlynodes.csv')
     g1.visualize()
 
 
-def run_simulation(batch, batch_runs):
+def run_simulation(batch, total_batches):
     g1 = NGraph()
     g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
 
-    m_result_folder = None
-    m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/tpa10w'
-    m_key_pool_size = 12
-    m_max_num_compromised_nodes = 3
+    total_nodes = g1.nxg.number_of_nodes()
 
-    kdc = KDC(graph=g1, key_pool_size=m_key_pool_size)
+    m_result_folder = None
+    m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/dpaComplete'
+    m_key_pool_size = 12
+    m_total_runs = 1
+
+    kdc = KDC(graph=g1)
     attacker = Attacker(graph=g1, kdc=kdc)
 
     g1.pick_path()
 
-    m_attack_type = 'tpa'       # tpa | dpa
-    m_distr_strategy = 'mhd_n'  # rd | mhd_n | mhd_a
-    m_attack_model = 'other'      # our | other
+    m_attack_type = 'dpa'       # tpa | dpa
+    m_distr_strategy = 'mhd_n'  # rd | mhd_n
+    m_attack_model = 'our'      # our | other
 
-    compromised_node_options = [i for i in range(1, m_max_num_compromised_nodes + 1)]
-    subset_size_options = [i for i in range(1, kdc.key_pool_size)]
-
-    compromised_node_options = [3]
-    subset_size_options = [5, 6]
+    max_num_compromised_nodes = total_nodes - 2
+    compromised_node_options = [i for i in range(1, max_num_compromised_nodes + 1)]
+    r_keyset_size_options = [i for i in range(1, m_key_pool_size)]
 
     if m_result_folder is not None:
         os.makedirs(m_result_folder, exist_ok=True)
 
-    m_runs = batch_runs * 10000
+    if batch == total_batches:
+        m_runs = m_total_runs - (total_batches - 1) * (m_total_runs // total_batches)
+    else:
+        m_runs = m_total_runs // total_batches
+
     for num_compromised_nodes in compromised_node_options:
-        for subset_size in subset_size_options:
+        for keyset_size in r_keyset_size_options:
             results = []
-            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{m_max_num_compromised_nodes}), keys=({subset_size}/{len(subset_size_options)})'):
-                compromised_nodes, is_success = attacker.run_single_attack(m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes)
+            file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{keyset_size}keys.csv'
+
+            if os.path.exists(file_name):
+                print(f'File {file_name} already exists, skipping...')
+                continue
+
+            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes}), keys=({keyset_size}/{len(r_keyset_size_options)})'):
+                compromised_nodes, is_success = attacker.run_single_attack(attack_type=m_attack_type, distr_strategy=m_distr_strategy, attack_model=m_attack_model, r_keyset_size=keyset_size, s_keyset_size=m_key_pool_size, num_compromised_nodes=num_compromised_nodes)
                 results.append([compromised_nodes, is_success])
 
             if m_result_folder is not None:
                 result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success'])
-                result.to_csv(f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
+                result.to_csv(file_name, index=False)
 
-
-# def run_simulation_parallel():
-#     g1 = NGraph()
-#     g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
-#
-#     m_result_folder = None
-#     m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/ppp'
-#     m_key_pool_size = 12
-#     m_runs = 10
-#     m_max_num_compromised_nodes = 3
-#
-#     kdc = KDC(graph=g1, key_pool_size=m_key_pool_size)
-#     attacker = Attacker(graph=g1, kdc=kdc)
-#
-#     g1.pick_path()
-#
-#     m_attack_type = 'tpa'       # tpa | dpa
-#     m_distr_strategy = 'mhd_n'  # rd | mhd_n | mhd_a
-#     m_attack_model = 'our'      # our | other
-#
-#     cores = 4  # Number of cores on Apple M2
-#     partitioned_runs = m_runs // cores
-#
-#     if m_result_folder is not None:
-#         os.makedirs(m_result_folder, exist_ok=True)
-#
-#     for num_compromised_nodes in range(1, m_max_num_compromised_nodes + 1):
-#         for subset_size in range(1, kdc.key_pool_size):
-#             with concurrent.futures.ProcessPoolExecutor(max_workers=cores) as executor:
-#                 futures = [executor.submit(wraper_run_single_attack, attacker, m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes) for _ in range(partitioned_runs)]
-#                 results = []
-#
-#                 for future in concurrent.futures.as_completed(futures):
-#                     results.append(future.result())
-#
-#             if m_result_folder is not None:
-#                 result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success'])
-#                 result.to_csv(f'{m_result_folder}/csv_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv', index=False)
-#
-#
-# def wraper_run_single_attack(attacker, m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes):
-#     compromised_nodes, is_success = attacker.run_single_attack(m_attack_type, m_distr_strategy, m_attack_model, subset_size, num_compromised_nodes)
-#     return [compromised_nodes, is_success]
-
-
-def merge_batches(attacker_type, distr_strategy, attack_model, num_compromised_nodes, subset_size):
-    result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/tpa10w'
-
-    # List to store dataframes from all batches.
-    dfs = []
-    count_runs = 0
-
-    for file in os.listdir(result_folder):
-        # Check for required elements in the file name.
-        if re.match(r"csv\d+_", file) and file.endswith(".csv") and all(x in file for x in [attacker_type, distr_strategy, attack_model, f'{num_compromised_nodes}c', f'{subset_size}keys']):
-
-            # Extract the number of runs from the file name.
-            match = re.search(r'(\d+)runs', file)
-            if match:
-                runs_in_file = int(match.group(1))
-                count_runs += runs_in_file
-
-            df = pd.read_csv(os.path.join(result_folder, file))
-            dfs.append(df)
-
-    if not dfs:
-        return
-
-    # Combine all dataframes.
-    combined_df = pd.concat(dfs, ignore_index=True)
-
-    # Generate the combined CSV file name.
-    combined_csv_name = f'csv_{attacker_type}_{distr_strategy}_{attack_model}_{count_runs}runs_{num_compromised_nodes}c_{subset_size}keys.csv'
-    combined_df.to_csv(os.path.join(result_folder, combined_csv_name), index=False)
-    print(f'Combined {len(dfs)} CSV files into {combined_csv_name}')
 
 if __name__ == "__main__":
     # demo()
 
-    for attacker_type in ['tpa', 'dpa']:
-        for distr_strategy in ['rd', 'mhd_n', 'mhd_a']:
-            for attack_model in ['our', 'other']:
-                for num_compromised_nodes in range(1, 4):
-                    for subset_size in range(1, 12):
-                        merge_batches(attacker_type, distr_strategy, attack_model, num_compromised_nodes, subset_size)
-
-    # parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
-    # parser.add_argument('batch', type=int, help='Batch number for the simulation')
-    # parser.add_argument('batch_runs', type=int, help='Number of runs in the batch (* 100000)')
-    # args = parser.parse_args()
-    # run_simulation(batch=args.batch, batch_runs=args.batch_runs)      # for example, python3 pr_new.py 1 1
+    parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
+    parser.add_argument('batch', type=int, help='Batch number for the simulation')
+    parser.add_argument('total_batches', type=int, help='Total number of batches for the simulation')
+    args = parser.parse_args()
+    run_simulation(batch=args.batch, total_batches=args.total_batches)  # for example: python3 pr_new.py 1 10
