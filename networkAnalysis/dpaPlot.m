@@ -2,8 +2,10 @@ set(groot, 'defaultFigureCloseRequestFcn', 'close(gcf)');   % avoid R2023b crash
 
 
 %plot_3d_for_dpa_fix();
-plot_3d_for_dpa_random();
+%plot_3d_for_dpa_random();
 %plot_3d_for_tpa_random();
+
+plot_for_dpa_our();
 
 
 function plot_3d_for_dpa_fix()
@@ -50,26 +52,70 @@ function plot_3d_for_dpa_fix()
 end
 
 
+function plot_for_dpa_our()
+    m_runs = 100000;
+    m_max_compromised_nodes = 10;
+    m_num_nodes = 12;
+    m_folder = '/Users/xingyuzhou/Downloads/cff10w/merged';
+
+    success_ratio_vector_cff = zeros(1, m_max_compromised_nodes);
+    avg_checks_vector_cff = zeros(1, m_max_compromised_nodes);
+
+    for compromised_nodes = 1:m_max_compromised_nodes
+        filename = sprintf('%s/csv_dpa_cff_our_%druns_%dc.csv', m_folder, m_runs, compromised_nodes);
+        data = readtable(filename);
+
+        success_count = sum(data.is_success == 1);
+        success_ratio_vector_cff(compromised_nodes) = success_count / m_runs;
+
+        checks = sum(data.count_checks);
+        avg_checks_vector_cff(compromised_nodes) = checks / m_runs;
+    end
+
+    subplot(2, 1, 1);
+    bar(success_ratio_vector_cff);
+    set(gca(), 'YScale', 'log');
+    xlabel('Compromised Nodes');
+    ylabel('Success Ratio');
+    title(sprintf('%d runs (CFF, Our DPA Model) / compromised nodes\n(Total Nodes = %d)', m_runs, m_num_nodes));
+    adjustYAxisForLogScale(m_runs)    % 调整 Y 轴数据以适应对数刻度
+
+    subplot(2, 1, 2);
+    bar(avg_checks_vector_cff);
+    xlabel('Compromised Nodes');
+    ylabel('Average Checks');
+    title(sprintf('%d runs (CFF, Our DPA Model) / compromised nodes\n(Total Nodes = %d)', m_runs, m_num_nodes));
+
+    fig = gcf;
+    fig.Position = [0, 0, 600, 1000];
+    print(fig, '-dpng', sprintf('%s/plot_cff_%druns.png', m_folder, m_runs), '-r300');
+end
+
+
 function plot_3d_for_dpa_random()
     m_runs = 10000;
     m_key_pool_size = 12;
     m_max_compromised_nodes = 10;
     m_num_nodes = 12;
-    m_folder = '/Users/xingyuzhou/Downloads/dpaComplete50x/merged';
+    m_folder = '/Users/xingyuzhou/Downloads/count1w/merged';
 
     max_subset_size = m_key_pool_size - 1;
+
     success_ratio_matrix1 = zeros(max_subset_size, m_max_compromised_nodes);
+    avg_checks_vetor1 = zeros(1, m_max_compromised_nodes);
+
 %    success_ratio_matrix2 = zeros(max_subset_size, max_compromised_nodes);
 %    success_ratio_matrix3 = zeros(max_subset_size, max_compromised_nodes);
 
     for compromised_nodes = 1:m_max_compromised_nodes
+        checks = 0;
         for keys = 1:max_subset_size
             filename1 = sprintf('%s/csv_dpa_mhd_n_our_%druns_%dc_%dkeys.csv', m_folder, m_runs, compromised_nodes, keys);
             data1 = readtable(filename1);
             success_count1 = sum(data1.is_success == 1);
             success_ratios1 = success_count1 / m_runs;
             success_ratio_matrix1(keys, compromised_nodes) = success_ratios1;
-
+            checks = checks + sum(data1.count_checks);
 
 %            filename2 = sprintf('./%s/csv_mhd_n_other_%druns_%dc_%dkeys.csv', folder, runs, compromised_nodes, keys);
 %            data2 = readtable(filename2);
@@ -84,9 +130,10 @@ function plot_3d_for_dpa_random()
 %            success_ratios3 = success_count3 / runs;
 %            success_ratio_matrix3(keys, compromised_nodes) = success_ratios3;
         end
+        avg_checks_vetor1(compromised_nodes) = checks / (max_subset_size * m_runs);
     end
 
-    subplot(3, 1, 1);
+    subplot(2, 1, 1);
     bar3(success_ratio_matrix1);
     set(gca(), 'ZScale', 'log');
     xlabel('Compromised Nodes');
@@ -95,6 +142,12 @@ function plot_3d_for_dpa_random()
     title(sprintf('%d runs (Max-Hamming Dist. Our DPA Model) / keyset size / compromised nodes\n(Total Nodes = %d, Key Pool Size = %d)', m_runs, m_num_nodes, m_key_pool_size));
     view(58, 16); % azimuth, elevation
     adjustZAxisForLogScale(m_runs)    % 调整 Z 轴数据以适应对数刻度
+
+    subplot(2, 1, 2);
+    plot(avg_checks_vetor1);
+    xlabel('Compromised Nodes');
+    ylabel('Average Checks');
+    title(sprintf('%d runs (Max-Hamming Dist. Our DPA Model) / keyset size / compromised nodes\n(Total Nodes = %d, Key Pool Size = %d)', m_runs, m_num_nodes, m_key_pool_size));
 
 %    subplot(3, 1, 2);
 %    bar3(success_ratio_matrix2);
@@ -120,7 +173,7 @@ function plot_3d_for_dpa_random()
     fig = gcf;
 %    fig.Visible = 'off';
     fig.Position = [0, 0, 800, 1600];
-    print(fig, '-dpng', sprintf('/%s/plot_3d_dpa_%druns.png', m_folder, m_runs), '-r300');
+    print(fig, '-dpng', sprintf('%s/plot_3d_dpa_%druns.png', m_folder, m_runs), '-r300');
 
 end
 
@@ -222,6 +275,16 @@ function adjustZAxisForLogScale(runs)
         zdata = get(h(i), 'ZData');
         zdata(zdata < zlim) = zlim;
         set(h(i), 'ZData', zdata);
+    end
+end
+
+function adjustYAxisForLogScale(runs)
+    ylim = 1 / runs;
+    h = get(gca, 'Children');
+    for i = 1:length(h)
+        ydata = get(h(i), 'YData');
+        ydata(ydata < ylim) = ylim;
+        set(h(i), 'YData', ydata);
     end
 end
 

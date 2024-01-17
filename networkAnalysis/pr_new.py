@@ -1,5 +1,7 @@
 import argparse
+import math
 import os
+import platform
 
 import networkx as nx
 import random
@@ -91,12 +93,12 @@ class NGraph:
 
     def visualize(self):
 
-        source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 's'][0]
-        key_pool_size = len(self.nxg.nodes[source]['keys']) if self.nxg.nodes[source]['keys'] is not None else 0
-        non_source = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') != 's'][0]
-        r_keyset_size = len(self.nxg.nodes[non_source]['keys']) if self.nxg.nodes[non_source]['keys'] is not None else 0
+        s_node_id = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') == 's'][0]
+        key_pool_size = len(self.nxg.nodes[s_node_id]['keys']) if self.nxg.nodes[s_node_id]['keys'] is not None else 0
+        r_node_id = [node for node, attr in self.nxg.nodes(data=True) if attr.get('node_type') != 's'][0]   # pick one relay node at will
+        keyset_size = len(self.nxg.nodes[r_node_id]['keys']) if self.nxg.nodes[r_node_id]['keys'] is not None else 0
 
-        all_combinations = factorial(key_pool_size) // (factorial(r_keyset_size) * factorial(key_pool_size - r_keyset_size))    # nCr; factorial: 5! = 5*4*3*2*1
+        all_combinations = factorial(key_pool_size) // (factorial(keyset_size) * factorial(key_pool_size - keyset_size))    # nCr; factorial: 5! = 5*4*3*2*1
 
         used_r_keysets = set()
         for node in self.nxg.nodes:
@@ -112,6 +114,7 @@ class NGraph:
 
         for node in self.nxg.nodes:
             node_type = self.nxg.nodes[node]['node_type']
+            keys_info = '' if node_type == 's' else f'\n{self.nxg.nodes[node]["keys"]}'
 
             if node_type in ['s', 't']:
                 node_sizes[node] = 1000
@@ -120,16 +123,16 @@ class NGraph:
             else:
                 node_sizes[node] = 500  # Default size for other nodes
 
-            node_labels[node] = f"{node_type[0].upper()}-{node}\n{self.nxg.nodes[node]['keys']}"
+            node_labels[node] = f"{node_type[0].upper()}({node}), ({len(self.nxg.nodes[node]['keys']) if self.nxg.nodes[node]['keys'] is not None else 0} keys){keys_info}"
 
-        plt.figure(figsize=(12, 12))
+        plt.figure(figsize=(15, 15))
         pos = nx.kamada_kawai_layout(self.nxg)
         # pos = nx.spring_layout(self.nxg, k=0.3, iterations=1000, seed=2) # k: optimal distance between nodes, iterations: number of iterations to run the spring layout algorithm, seed: seed for random state
         # pos = nx.spectral_layout(self.nxg)
         # pos = nx.circular_layout(self.nxg)
 
-        compromised_nodes = [node for node in self.nxg.nodes if self.nxg.nodes[node]['compromised']]
         normal_nodes = [node for node in self.nxg.nodes if not self.nxg.nodes[node]['compromised']]
+        compromised_nodes = [node for node in self.nxg.nodes if self.nxg.nodes[node]['compromised']]
 
         nx.draw_networkx_nodes(self.nxg, pos,
                                nodelist=normal_nodes,
@@ -141,7 +144,6 @@ class NGraph:
                                node_color=[node_colors[n] for n in compromised_nodes],
                                # linewidths=1.5, edgecolors='red',
                                node_shape='*')
-
         nx.draw_networkx_edges(self.nxg, pos, edgelist=self.nxg.edges, edge_color='black', width=1, alpha=0.3)
 
         if self.picked_path is not None:
@@ -151,7 +153,7 @@ class NGraph:
 
         nx.draw_networkx_labels(self.nxg, pos, labels=node_labels)
 
-        plt.title(f'Network with {self.nxg.number_of_nodes() - 1} non-source nodes\nColors Used={len(used_r_keysets)-1}/{all_combinations} (source excluded), Key Pool Size={key_pool_size}')
+        plt.title(f'Network with {self.nxg.number_of_nodes()} nodes\nColors Used by Non-Source Nodes={len(used_r_keysets)-1}/{all_combinations}\nKeypool Size={key_pool_size}')
         plt.axis('off')
         plt.show()
         plt.close()
@@ -180,75 +182,111 @@ class KDC:
 
     def __init__(self, graph: NGraph):
         self.graph = graph
-        self.key_pool_size = None
-        self.key_pool = None
-        self.used_r_keysets: Set[str] = set()
+        self.__keypool_size: int | None = None
+        self.__keypool: Set[str] = set()
+        self.__keysets_assigned_b: Set[str] = set()
+        self.__keys_usage: Dict[str, int] = {}
 
-    def set_key_pool_size(self, key_pool_size: int):
-        self.key_pool_size = key_pool_size
-        self.key_pool = {f'k{i}' for i in range(self.key_pool_size)}
+    def get_keypool_size(self) -> int:
+        if self.__keypool_size is None:
+            raise ValueError("__keypool_size is not set yet!")
+        return self.__keypool_size
 
-    def get_key_pool_size(self) -> int:
-        if self.key_pool_size is None:
-            raise ValueError("key_pool_size is not set")
-        return self.key_pool_size
+    def get_keypool(self) -> Set[str]:
+        if self.__keypool_size is None:
+            raise ValueError("__keypool_size is not set yet!")
+        return self.__keypool
 
-    def get_key_pool(self) -> Set[str]:
-        if self.key_pool_size is None:
-            raise ValueError("key_pool_size is not set")
-        return self.key_pool
+    def get_keys_usage(self) -> Dict[str, int]:
+        return self.__keys_usage
 
-    def distribute_fix_num_keys_randomly(self, r_keyset_size: int, s_keyset_size: int):
+    def reset_distribution(self):
+        for node in self.graph.nxg.nodes():
+            self.graph.nxg.nodes[node]['keys'] = None
+
+        self.__keysets_assigned_b.clear()
+        self.__keys_usage.clear()
+
+    def assign_keyset_to_r_node(self, r_node: int, keyset_b: str):
+        self.graph.nxg.nodes[r_node]['keys'] = self.decode_keys(keyset_b)
+        self.__keysets_assigned_b.add(keyset_b)
+
+        for key in self.decode_keys(keyset_b):
+            if key not in self.__keys_usage:
+                self.__keys_usage[key] = 1
+            else:
+                self.__keys_usage[key] += 1
+
+    def set_keypool_size(self, key_pool_size: int):
+        self.__keypool_size = key_pool_size
+        self.__keypool = {f'k{i}' for i in range(self.__keypool_size)}
+
+    def distribute_fix_num_keys_randomly(self, keyset_size: int, keypool_size: int):
         """
         Distributes a fixed number of keys randomly to each non-source node.
         """
 
-        self.set_key_pool_size(s_keyset_size)
+        self.reset_distribution()
+        self.set_keypool_size(keypool_size)
 
         source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
         for node in source_nodes:
-            self.graph.nxg.nodes[node]['keys'] = self.key_pool.copy()
+            self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
 
         non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
         subgraph = self.graph.nxg.subgraph(non_source_nodes)
         for node in subgraph.nodes:
-            subgraph.nodes[node]['keys'] = set(random.sample(sorted(self.key_pool), r_keyset_size))
+            keyset_b = self.encode_keys(random.sample(sorted(self.get_keypool()), keyset_size))
+            self.assign_keyset_to_r_node(node, keyset_b)
 
-    def distribute_keys_with_cover_free_family(self, r_keyset_size: int, s_keyset_size: int):
-        pass
+    def distribute_keys_with_CFF(self, max_c_nodes: int):
 
-    def reset_keys(self):
-        for node in self.graph.nxg.nodes():
-            self.graph.nxg.nodes[node]['keys'] = None
+        self.reset_distribution()
 
-    def encode_keys(self, node_keys):
-        return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.get_key_pool_size())])
+        # use setup in dual-HMAC
+        q = 10 ** (-3)  # ten to the power of -3
+        Pr = 1 / (2 * (max_c_nodes + 1))
+        L = math.ceil(math.e * (max_c_nodes + 1) * math.log(1 / q))    # math.e: natural number e, math.log: natural logarithm (ln)
+        avg_keyset_size = math.ceil((math.e / 2) * math.log(1 / q))
 
-    def decode_keys(self, encoded_keys):
-        return {f'k{i}' for i in range(self.get_key_pool_size()) if encoded_keys[i] == '1'}
+        self.set_keypool_size(L)
+        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
+        for node in source_nodes:
+            self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
 
-    def hamming_distance(self, str1, str2):
-        return sum(c1 != c2 for c1, c2 in zip(str1, str2))
+        # TODO: If sink nodes can't be compromised, why don't we assign all the keys to the sink nodes?
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
+        subgraph = self.graph.nxg.subgraph(non_source_nodes)
+        for node in subgraph.nodes:
+            keyset = set()
+            for key in self.get_keypool():
+                if random.randint(a=1, b=2 * (max_c_nodes + 1)) == 1:       # random.randint(a, b): return a random integer N such that a <= N <= b
+                    keyset.add(key)
 
-    def distribute_fix_num_keys_with_max_hamming_distance(self, r_keyset_size: int, s_keyset_size: int, strategy='nf'):
+            keyset_b = self.encode_keys(keyset)
+            self.assign_keyset_to_r_node(node, keyset_b)
+
+    def distribute_fix_num_keys_with_mhd(self, keyset_size: int, keypool_size: int):
         """
         check uml diagram: dist_mh.png
         """
 
-        self.set_key_pool_size(s_keyset_size)
+        self.reset_distribution()
+        self.set_keypool_size(keypool_size)
 
         source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
         for node in source_nodes:
-            self.graph.nxg.nodes[node]['keys'] = self.key_pool.copy()
+            self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
 
-        possible_r_keysets = list(combinations(self.key_pool, r_keyset_size))
-        possible_r_keysets_encoded = [self.encode_keys(keyset) for keyset in possible_r_keysets]
+        # TODO: when keypool_size is large, the number of possible keysets is too large to be computed
+        keysets_possible = list(combinations(self.get_keypool(), keyset_size))
+        keysets_possible_b = [self.encode_keys(keyset) for keyset in keysets_possible]
 
         # subgraph can change attributes of the original graph, but can not change layout of the original graph
         non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
         subgraph = self.graph.nxg.subgraph(non_source_nodes)
 
-        def find_neighbor_of_group_with_max_degree(g: nx.Graph, group: Set[int]) -> int:
+        def pick_next_node_to_assign(g: nx.Graph, group: Set[int]) -> int | None:
             """
             The input is a set of nodes and the output is one of the nodes with the largest degree among the neighbours of that set of nodes.
             """
@@ -266,30 +304,29 @@ class KDC:
 
             return None
 
-        def find_r_keysets_with_max_hd_sum(g: nx.Graph, node: int, possible_r_keysets_encoded: List[str]) -> List[str]:
+        def find_keysets_with_mhds(g: nx.Graph, node: int, keysets_possible_b: List[str]) -> List[str]:
             """
-            In possible_r_keysets_encoded, find all subsets that have the maximum hamming distance sum to all neighbours.
+            In keysets_possible_b, find all subsets that have the maximum hamming distance sum to all neighbours.
             """
             max_hd_sum = -1
-            r_keysets_with_max_hd = []
+            keysets_with_mhd_b = []
 
-            for keyset in possible_r_keysets_encoded:
+            for keyset_b in keysets_possible_b:
                 hd_sum = 0
 
                 for neighbor in g.neighbors(node):
                     if g.nodes[neighbor]['keys'] is not None:
-                        hd_sum += self.hamming_distance(keyset, self.encode_keys(g.nodes[neighbor]['keys']))
+                        hd_sum += self.hamming_distance(keyset_b, self.encode_keys(g.nodes[neighbor]['keys']))
 
                 if hd_sum > max_hd_sum:
                     max_hd_sum = hd_sum
-                    r_keysets_with_max_hd = [keyset]
+                    keysets_with_mhd_b = [keyset_b]
                 elif hd_sum == max_hd_sum:
-                    r_keysets_with_max_hd.append(keyset)
+                    keysets_with_mhd_b.append(keyset_b)
 
-            # print(f'subsets_with_max_hd (hd_sum={hd_sum}, max_hd_sum={max_hd_sum}, total={len(subsets_with_max_hd)}): {subsets_with_max_hd}')
-            return r_keysets_with_max_hd
+            return keysets_with_mhd_b
 
-        def pick_best_r_keyset_new_first(g: nx.Graph, node: int, possible_r_keysets_encoded: List[str]) -> str:
+        def pick_best_keyset(g: nx.Graph, node: int, keysets_possible_b: List[str]) -> str:
             """
             1. for the case where node keys is None, treat the distance to the Hamming as 0.
             2. call find_subsets_with_max_hd_sum() to get possible subsets.
@@ -297,62 +334,52 @@ class KDC:
             4. choose a random subset among the new possible subsets and return it.
             """
 
-            # TODO: When r_keyset_size = 1/2 * key_pool_size, there is a situation where neighbouring nodes are identical. The reason is to maximise max_hd_sum.
+            keysets_with_mhd_b = find_keysets_with_mhds(g, node, keysets_possible_b)
+            keysets_unused_b = [keyset for keyset in keysets_with_mhd_b if keyset not in self.__keysets_assigned_b]
 
-            r_keysets_with_max_hd = find_r_keysets_with_max_hd_sum(g, node, possible_r_keysets_encoded)
-            unused_r_keysets = [keyset for keyset in r_keysets_with_max_hd if keyset not in self.used_r_keysets]
-            # print(f'unused_subsets (total={len(unused_subsets)}): {unused_subsets}')
-            best_r_keyset = random.choice(unused_r_keysets) if unused_r_keysets else random.choice(r_keysets_with_max_hd)
-            # print(f'best_subset: {self.decode_keys(best_subset)}')
-            self.used_r_keysets.add(best_r_keyset)
+            total_keys_needed = len(subgraph.nodes) * keyset_size
+            key_usage_freq = {key: self.__keys_usage.get(key, 0) / total_keys_needed for key in self.get_keypool()}
+            keysets_to_consider_b = keysets_unused_b if keysets_unused_b else keysets_with_mhd_b
 
-            return best_r_keyset
+            # keyset_best_b = None
+            # min_deviation = float('inf')
+            # for keyset_b in keysets_to_consider_b:
+            #     deviation = sum(abs(key_usage_freq[key] - 1 / keypool_size) for key in self.decode_keys(keyset_b))
+            #     if deviation < min_deviation:
+            #         min_deviation = deviation
+            #         keyset_best_b = keyset_b
 
-        # def pick_best_subset_with_avg_keyusage(g: nx.Graph, node: int, possible_subsets_encoded: List[str]) -> str:
-        #     """
-        #     1. for the case where node keys is None, treat the distance to the Hamming as 0.
-        #     2. call find_subsets_with_max_hd_sum() to get possible subsets.
-        #     3. among the alternative subsets, choose the subset with the most even key_usage (so that each key is used as many times as possible)
-        #
-        #     The method was not effective. It was not used in the simulation!
-        #     """
-        #
-        #     subsets_with_max_hd = find_r_keysets_with_max_hd_sum(g, node, possible_subsets_encoded)
-        #     best_subset = min(subsets_with_max_hd, key=lambda x: max(self.key_usage[key] for key in self.decode_keys(x)))
-        #
-        #     # print(f'best_subset: {self.decode_keys(best_subset)}')
-        #
-        #     for key in self.decode_keys(best_subset):
-        #         self.key_usage[key] += 1
-        #
-        #     # print(f'key_usage: {self.key_usage}\n')
-        #
-        #     return best_subset
+            keyset_best_b = random.choice(keysets_to_consider_b)
+
+            return keyset_best_b
 
         assigned_group = set()
         while len(assigned_group) < len(subgraph.nodes):
             if not assigned_group:
                 node = max(non_source_nodes, key=lambda x: subgraph.degree[x])
             else:
-                node = find_neighbor_of_group_with_max_degree(subgraph, assigned_group)
+                node = pick_next_node_to_assign(subgraph, assigned_group)
 
-            # print(f'Selected node: {node} (degree: {subgraph.degree[node]}, assigned_group: {assigned_group})')
+            keyset_chosen_b = pick_best_keyset(subgraph, node, keysets_possible_b)
 
-            if strategy == 'nf':
-                best_r_keyset_encoded = pick_best_r_keyset_new_first(subgraph, node, possible_r_keysets_encoded)
-            # elif strategy == 'avg':
-            #     best_subset_encoded = pick_best_subset_with_avg_keyusage(subgraph, node, possible_subsets_encoded)
-
-            # print('\n')
-            subgraph.nodes[node]['keys'] = self.decode_keys(best_r_keyset_encoded)
+            self.assign_keyset_to_r_node(node, keyset_chosen_b)
             assigned_group.add(node)
+
+    def encode_keys(self, node_keys):
+        return ''.join(['1' if f'k{i}' in node_keys else '0' for i in range(self.get_keypool_size())])
+
+    def decode_keys(self, encoded_keys):
+        return {f'k{i}' for i in range(self.get_keypool_size()) if encoded_keys[i] == '1'}
+
+    def hamming_distance(self, str1, str2):
+        return sum(c1 != c2 for c1, c2 in zip(str1, str2))
 
 
 class Attacker:
     def __init__(self, graph: NGraph, kdc: KDC):
         self.graph = graph
         self.kdc = kdc
-        self.key_pool_compromised: Set[str] = set()
+        self.keypool_compromised: Set[str] = set()
         self.finite_field_size = 2 ** 8
 
     def compromise_node_randomly_on_path(self, num_compromised_nodes: int) -> List[int]:
@@ -361,47 +388,55 @@ class Attacker:
         """
 
         if num_compromised_nodes > len(self.graph.picked_path) - 2:
-            raise ValueError("num_compromised_nodes cannot be larger than number of nodes in the path")
+            raise ValueError("num_compromised_nodes cannot be larger than number of relay nodes in the path")
 
         # only compromise intermediate nodes
         compromised_nodes = random.sample(self.graph.picked_path[1:-1], num_compromised_nodes)
-        # print(f'compromised nodes: {compromised_nodes}')
 
         for node in compromised_nodes:
             self.graph.nxg.nodes[node]['compromised'] = True
             if self.graph.nxg.nodes[node]['keys'] is not None:
-                self.key_pool_compromised.update(self.graph.nxg.nodes[node]['keys'])
+                self.keypool_compromised.update(self.graph.nxg.nodes[node]['keys'])
 
         return compromised_nodes
 
-    def compromise_node(self, node: int):
-        """
-        Compromises a specific node.
-        """
+    # def compromise_node(self, node: int):
+    #     """
+    #     Compromises a specific node.
+    #     """
+    #
+    #     if node not in self.graph.nxg.nodes:
+    #         raise ValueError("Node not found in the graph")
+    #     elif self.graph.nxg.nodes[node]['node_type'] != 'r':
+    #         raise ValueError("Node is not a relay node")
+    #
+    #     self.graph.nxg.nodes[node]['compromised'] = True
+    #     self.keypool_compromised.update(self.graph.nxg.nodes[node]['keys'])
 
-        if node not in self.graph.nxg.nodes:
-            raise ValueError("Node not found in the graph")
-        elif self.graph.nxg.nodes[node]['node_type'] != 'r':
-            raise ValueError("Node is not an intermediate node")
-
-        self.graph.nxg.nodes[node]['compromised'] = True
-        self.key_pool_compromised.update(self.graph.nxg.nodes[node]['keys'])
-
-    def reset_comromised_status(self):
+    def reset_comromise(self):
         for node in self.graph.nxg.nodes():
             self.graph.nxg.nodes[node]['compromised'] = False
-        self.key_pool_compromised.clear()
+        self.keypool_compromised.clear()
 
-    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, r_keyset_size: int, s_keyset_size: int, num_compromised_nodes: int) -> Tuple[List[int], int]:
-        self.kdc.reset_keys()
-
+    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, keyset_size: int | None, keypool_size: int | None, num_compromised_nodes: int) -> Tuple[List[int], int, int]:
         if distr_strategy == 'rd':
-            self.kdc.distribute_fix_num_keys_randomly(r_keyset_size, s_keyset_size)
-        elif distr_strategy == 'mhd_n':
-            self.kdc.distribute_fix_num_keys_with_max_hamming_distance(r_keyset_size, s_keyset_size, strategy='nf')
+            self.kdc.distribute_fix_num_keys_randomly(keyset_size, keypool_size)
+        elif distr_strategy == 'mhd':
+            self.kdc.distribute_fix_num_keys_with_mhd(keyset_size, keypool_size)
+        elif distr_strategy == 'cff':
+            self.kdc.distribute_keys_with_CFF(max_c_nodes=num_compromised_nodes)
+        else:
+            raise ValueError(f"Unknown distribution strategy: {distr_strategy}")
 
-        self.reset_comromised_status()
+        self.reset_comromise()
         compromised_nodes = self.compromise_node_randomly_on_path(num_compromised_nodes)
+
+        count_checks = 0        # number of checks performed by non-compromised nodes
+        first_c_node_index = next((i for i, node in enumerate(self.graph.picked_path) if self.graph.nxg.nodes[node]['compromised']), None)
+        if first_c_node_index is not None:
+            for node in self.graph.picked_path[first_c_node_index:]:
+                if not self.graph.nxg.nodes[node]['compromised']:
+                    count_checks += 1
 
         is_success = None
 
@@ -418,7 +453,7 @@ class Attacker:
                     path_success = 1  # assume the path succeeds
 
                     for nd in path_from_c[1:]:  # Skip compromised node
-                        d = len(self.graph.nxg.nodes[nd]['keys'] - self.key_pool_compromised)
+                        d = len(self.graph.nxg.nodes[nd]['keys'] - self.keypool_compromised)
                         if d == 0:
                             continue
                         elif random.randint(1, self.finite_field_size ** d) != 1:
@@ -434,14 +469,16 @@ class Attacker:
                 check uml diagram: our_dpa.png
                 """
 
-                is_success = 1
+                is_success = 1      # assume the attack succeeds
                 latest_compromised_node = next((node for node in self.graph.picked_path if self.graph.nxg.nodes[node]['compromised']), None)
 
                 for node in self.graph.picked_path[self.graph.picked_path.index(latest_compromised_node):]:
                     if self.graph.nxg.nodes[node]['compromised']:
                         latest_compromised_node = node
                     else:
+                        # TODO: What if there are MACs left that were modified by the last compromised node?
                         d = len(self.graph.nxg.nodes[node]['keys'] - self.graph.nxg.nodes[latest_compromised_node]['keys'])
+                        # TODO: Can I make possibility 10 times higher by let it > 100?
                         if random.randint(1, self.finite_field_size ** d) != 1:
                             is_success = 0
                             break
@@ -459,7 +496,7 @@ class Attacker:
 
                 for node in self.graph.picked_path[first_c_node_index:]:
                     if self.graph.nxg.nodes[node]['compromised']:
-                        compromised_key = random.choice(list(self.kdc.key_pool))
+                        compromised_key = random.choice(list(self.kdc.get_keypool()))
                     elif compromised_key in self.graph.nxg.nodes[node]['keys']:
                         is_success = 0
                         break
@@ -474,7 +511,7 @@ class Attacker:
                 for c_node in compromised_nodes:
                     path_from_c = self.graph.picked_path[self.graph.picked_path.index(c_node):]
                     path_success = 1
-                    compromised_key = random.choice(list(self.kdc.key_pool))
+                    compromised_key = random.choice(list(self.kdc.get_keypool()))
 
                     for nd in path_from_c[1:]:  # Skip compromised node
                         if not self.graph.nxg.nodes[nd]['compromised']:
@@ -486,54 +523,63 @@ class Attacker:
                         is_success = 1
                         break
 
-        return compromised_nodes, is_success
+        return compromised_nodes, is_success, count_checks
 
 
 def demo():
     g1 = NGraph()
-    g1.generate_ws_graph(num_nodes=12)
+    # g1.generate_ws_graph(num_nodes=12)
+    g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
     g1.pick_path()
-    # g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
 
     kdc = KDC(graph=g1)
-    kdc.reset_keys()    # don't forget to reset keys before distributing new keys
-    # kdc.distribute_fix_num_keys_with_max_hamming_distance(r_keyset_size=2, s_keyset_size=12, strategy='nf')
-    # kdc.distribute_fix_num_keys_randomly(r_keyset_size=3, s_keyset_size=12)
-
 
     attacker = Attacker(graph=g1, kdc=kdc)
-    attacker.compromise_node_randomly_on_path(num_compromised_nodes=2)
-
-    g1.take_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/onlynodes.csv')
+    compromised_nodes, is_success, count_checks = attacker.run_single_attack(attack_type='dpa',
+                                                                                distr_strategy='cff',
+                                                                                attack_model='our',
+                                                                                keyset_size=None,
+                                                                                keypool_size=None,
+                                                                                num_compromised_nodes=3)
+    print(f'compromised_nodes: {compromised_nodes}, is_success: {is_success}, count_checks: {count_checks}')
     g1.visualize()
+    # compromised_nodes, is_success, count_checks = attacker.run_single_attack(attack_type='dpa',
+    #                                                                          distr_strategy='mhd',
+    #                                                                          attack_model='our',
+    #                                                                          keyset_size=10,
+    #                                                                          keypool_size=20,
+    #                                                                          num_compromised_nodes=3)
+    # print(f'compromised_nodes: {compromised_nodes}, is_success: {is_success}, count_checks: {count_checks}')
+
+    # g1.take_snapshot(filename='/Users/xingyuzhou/Downloads/new.csv')
 
 
 def run_simulation(batch, total_batches):
     g1 = NGraph()
-    g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
 
-    total_nodes = g1.nxg.number_of_nodes()
+    if platform.system() == 'Darwin':
+        g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
+        m_result_folder = '/Users/xingyuzhou/Downloads/test'
+    else:
+        g1.restore_snapshot(filename='/home/xingyu/Downloads/12n.csv')
+        m_result_folder = '/home/xingyu/Downloads/mhd10w'
 
-    m_result_folder = None
-    m_result_folder = '/Users/xingyuzhou/TUNC/networkAnalysis/dpaComplete'
+    g1.pick_path()
+
     m_key_pool_size = 12
-    m_total_runs = 1
+    m_total_runs = 10
+    m_attack_type = 'dpa'       # tpa | dpa
+    m_distr_strategy = 'mhd'  # rd | mhd | cff
+    m_attack_model = 'other'      # our | other
 
     kdc = KDC(graph=g1)
     attacker = Attacker(graph=g1, kdc=kdc)
 
-    g1.pick_path()
-
-    m_attack_type = 'dpa'       # tpa | dpa
-    m_distr_strategy = 'mhd_n'  # rd | mhd_n
-    m_attack_model = 'our'      # our | other
-
-    max_num_compromised_nodes = total_nodes - 2
+    max_num_compromised_nodes = g1.nxg.number_of_nodes() - 2
     compromised_node_options = [i for i in range(1, max_num_compromised_nodes + 1)]
-    r_keyset_size_options = [i for i in range(1, m_key_pool_size)]
+    keyset_size_options = [i for i in range(1, m_key_pool_size)]
 
-    if m_result_folder is not None:
-        os.makedirs(m_result_folder, exist_ok=True)
+    os.makedirs(m_result_folder, exist_ok=True)
 
     if batch == total_batches:
         m_runs = m_total_runs - (total_batches - 1) * (m_total_runs // total_batches)
@@ -541,20 +587,47 @@ def run_simulation(batch, total_batches):
         m_runs = m_total_runs // total_batches
 
     for num_compromised_nodes in compromised_node_options:
-        for keyset_size in r_keyset_size_options:
-            results = []
-            file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{keyset_size}keys.csv'
+    # for num_compromised_nodes in [8]:
 
+        if m_distr_strategy == 'cff':
+            results = []
+            file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c.csv'
             if os.path.exists(file_name):
                 print(f'File {file_name} already exists, skipping...')
                 continue
 
-            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes}), keys=({keyset_size}/{len(r_keyset_size_options)})'):
-                compromised_nodes, is_success = attacker.run_single_attack(attack_type=m_attack_type, distr_strategy=m_distr_strategy, attack_model=m_attack_model, r_keyset_size=keyset_size, s_keyset_size=m_key_pool_size, num_compromised_nodes=num_compromised_nodes)
-                results.append([compromised_nodes, is_success])
+            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes})'):
+                compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
+                                                                                   distr_strategy=m_distr_strategy,
+                                                                                   attack_model=m_attack_model,
+                                                                                   keyset_size=None,
+                                                                                   keypool_size=None,
+                                                                                   num_compromised_nodes=num_compromised_nodes)
+                results.append([compromised_nodes, is_success, checks])
 
-            if m_result_folder is not None:
-                result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success'])
+            result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks'])
+            result.to_csv(file_name, index=False)
+
+        else:
+            for keyset_size in keyset_size_options:
+            # for keyset_size in [3]:
+                results = []
+                file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{keyset_size}keys.csv'
+
+                if os.path.exists(file_name):
+                    print(f'File {file_name} already exists, skipping...')
+                    continue
+
+                for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes}), keys=({keyset_size}/{len(keyset_size_options)})'):
+                    compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
+                                                                                       distr_strategy=m_distr_strategy,
+                                                                                       attack_model=m_attack_model,
+                                                                                       keyset_size=keyset_size,
+                                                                                       keypool_size=m_key_pool_size,
+                                                                                       num_compromised_nodes=num_compromised_nodes)
+                    results.append([compromised_nodes, is_success, checks])
+
+                result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks'])
                 result.to_csv(file_name, index=False)
 
 
@@ -562,7 +635,7 @@ if __name__ == "__main__":
     # demo()
 
     parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
-    parser.add_argument('batch', type=int, help='Batch number for the simulation')
+    parser.add_argument('batch', type=int, help='Current batch number for the simulation')
     parser.add_argument('total_batches', type=int, help='Total number of batches for the simulation')
     args = parser.parse_args()
     run_simulation(batch=args.batch, total_batches=args.total_batches)  # for example: python3 pr_new.py 1 10
