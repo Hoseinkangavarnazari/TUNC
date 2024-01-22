@@ -53,42 +53,70 @@ end
 
 
 function plot_for_dpa_our()
-    m_runs = 100000;
+    m_runs = 10^6;
     m_max_compromised_nodes = 10;
+    m_max_keyset_size = 11;
     m_num_nodes = 12;
-    m_folder = '/Users/xingyuzhou/Downloads/cff10w/merged';
+    m_folder_cff = '/Users/xingyuzhou/Downloads/dpa_cff_our_106/merged';
+    m_folder_mhd = '/Users/xingyuzhou/Downloads/dpa_mhd_our_106/merged';
 
     success_ratio_vector_cff = zeros(1, m_max_compromised_nodes);
     avg_checks_vector_cff = zeros(1, m_max_compromised_nodes);
 
-    for compromised_nodes = 1:m_max_compromised_nodes
-        filename = sprintf('%s/csv_dpa_cff_our_%druns_%dc.csv', m_folder, m_runs, compromised_nodes);
+    success_ratio_matrix_mhd = zeros(m_max_keyset_size, m_max_compromised_nodes);
+    avg_checks_matrix_mhd = zeros(m_max_keyset_size, m_max_compromised_nodes);
+
+    for compromised_nodes = 1:2:m_max_compromised_nodes
+        filename = sprintf('%s/csv_dpa_cff_our_%druns_%dc.csv', m_folder_cff, m_runs, compromised_nodes);
         data = readtable(filename);
 
-        success_count = sum(data.is_success == 1);
-        success_ratio_vector_cff(compromised_nodes) = success_count / m_runs;
+        success_ratio_vector_cff(compromised_nodes) = sum(data.is_success == 1) / m_runs;
+        avg_checks_vector_cff(compromised_nodes) = sum(data.count_checks) / m_runs;
 
-        checks = sum(data.count_checks);
-        avg_checks_vector_cff(compromised_nodes) = checks / m_runs;
+        for keyset_size = 1:2:m_max_keyset_size
+            filename = sprintf('%s/csv_dpa_mhd_our_%druns_%dc_%dkeys.csv', m_folder_mhd, m_runs, compromised_nodes, keyset_size);
+            data = readtable(filename);
+            success_ratio_matrix_mhd(keyset_size, compromised_nodes) = sum(data.is_success == 1) / m_runs;
+            avg_checks_matrix_mhd(keyset_size, compromised_nodes) = sum(data.count_checks) / m_runs;
+        end
+
     end
 
-    subplot(2, 1, 1);
+    subplot(2, 2, 1);
     bar(success_ratio_vector_cff);
     set(gca(), 'YScale', 'log');
     xlabel('Compromised Nodes');
     ylabel('Success Ratio');
-    title(sprintf('%d runs (CFF, Our DPA Model) / compromised nodes\n(Total Nodes = %d)', m_runs, m_num_nodes));
+    title(sprintf('CFF, Our DPA Model\n%d runs / compromised nodes (Total Nodes = %d)', m_runs, m_num_nodes));
     adjustYAxisForLogScale(m_runs)    % 调整 Y 轴数据以适应对数刻度
 
-    subplot(2, 1, 2);
+    subplot(2, 2, 2);
     bar(avg_checks_vector_cff);
     xlabel('Compromised Nodes');
     ylabel('Average Checks');
-    title(sprintf('%d runs (CFF, Our DPA Model) / compromised nodes\n(Total Nodes = %d)', m_runs, m_num_nodes));
+    title(sprintf('CFF, Our DPA Model\n%d runs / compromised nodes (Total Nodes = %d)', m_runs, m_num_nodes));
+
+    subplot(2, 2, 3);
+    bar3(success_ratio_matrix_mhd);
+    set(gca(), 'ZScale', 'log');
+    xlabel('Compromised Nodes');
+    ylabel('Relay Node Keyset Size');
+    zlabel('Success Ratio');
+    title(sprintf('MHD, Our DPA Model\n%d runs / keyset size / compromised nodes (Total Nodes = %d)', m_runs, m_num_nodes));
+    view(58, 16); % azimuth, elevation
+    adjustZAxisForLogScale(m_runs)    % 调整 Z 轴数据以适应对数刻度
+
+    subplot(2, 2, 4);
+    bar3(avg_checks_matrix_mhd);
+    xlabel('Compromised Nodes');
+    ylabel('Relay Node Keyset Size');
+    zlabel('Average Checks');
+    title(sprintf('MHD, Our DPA Model\n%d runs / keyset size / compromised nodes (Total Nodes = %d)', m_runs, m_num_nodes));
+    view(58, 16); % azimuth, elevation
 
     fig = gcf;
-    fig.Position = [0, 0, 600, 1000];
-    print(fig, '-dpng', sprintf('%s/plot_cff_%druns.png', m_folder, m_runs), '-r300');
+    fig.Position = [0, 0, 1200, 1200];
+    print(fig, '-dpng', sprintf('%s/plot_cff_%druns.png', m_folder_cff, m_runs), '-r300');
 end
 
 

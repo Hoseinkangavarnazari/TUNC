@@ -557,27 +557,25 @@ def demo():
 def run_simulation(batch, total_batches):
     g1 = NGraph()
 
-    if platform.system() == 'Darwin':
+    if platform.system() == 'Darwin':   # Mac OS
         g1.restore_snapshot(filename='/Users/xingyuzhou/TUNC/networkAnalysis/networks/12n.csv')
-        m_result_folder = '/Users/xingyuzhou/Downloads/test'
+        m_result_folder = '/Users/xingyuzhou/Downloads/dpa_cff_our_106'
     else:
         g1.restore_snapshot(filename='/home/xingyu/Downloads/12n.csv')
-        m_result_folder = '/home/xingyu/Downloads/mhd10w'
+        m_result_folder = '/home/xingyu/Downloads/dpa_mhd_our_106'
 
     g1.pick_path()
 
-    m_key_pool_size = 12
-    m_total_runs = 10
+    m_keypool_size = 12
+    m_total_runs = 10 ** 6
     m_attack_type = 'dpa'       # tpa | dpa
-    m_distr_strategy = 'mhd'  # rd | mhd | cff
-    m_attack_model = 'other'      # our | other
+    m_distr_strategy = 'cff'  # rd | mhd | cff
+    m_attack_model = 'our'      # our | other
 
     kdc = KDC(graph=g1)
     attacker = Attacker(graph=g1, kdc=kdc)
 
     max_num_compromised_nodes = g1.nxg.number_of_nodes() - 2
-    compromised_node_options = [i for i in range(1, max_num_compromised_nodes + 1)]
-    keyset_size_options = [i for i in range(1, m_key_pool_size)]
 
     os.makedirs(m_result_folder, exist_ok=True)
 
@@ -586,7 +584,7 @@ def run_simulation(batch, total_batches):
     else:
         m_runs = m_total_runs // total_batches
 
-    for num_compromised_nodes in compromised_node_options:
+    for num_compromised_nodes in range(1, max_num_compromised_nodes + 1, 2):
     # for num_compromised_nodes in [8]:
 
         if m_distr_strategy == 'cff':
@@ -596,7 +594,7 @@ def run_simulation(batch, total_batches):
                 print(f'File {file_name} already exists, skipping...')
                 continue
 
-            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes})'):
+            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type}_{m_distr_strategy}_{m_attack_model} (batch={batch}, c={num_compromised_nodes}/{max_num_compromised_nodes})'):
                 compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
                                                                                    distr_strategy=m_distr_strategy,
                                                                                    attack_model=m_attack_model,
@@ -609,7 +607,7 @@ def run_simulation(batch, total_batches):
             result.to_csv(file_name, index=False)
 
         else:
-            for keyset_size in keyset_size_options:
+            for keyset_size in range(1, m_keypool_size, 2):
             # for keyset_size in [3]:
                 results = []
                 file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{keyset_size}keys.csv'
@@ -618,12 +616,12 @@ def run_simulation(batch, total_batches):
                     print(f'File {file_name} already exists, skipping...')
                     continue
 
-                for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type} ({m_distr_strategy}, {m_attack_model}) for c=({num_compromised_nodes}/{max_num_compromised_nodes}), keys=({keyset_size}/{len(keyset_size_options)})'):
+                for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type}_{m_distr_strategy}_{m_attack_model} (batch={batch}, c={num_compromised_nodes}/{max_num_compromised_nodes}, keys={keyset_size}/{m_keypool_size})'):
                     compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
                                                                                        distr_strategy=m_distr_strategy,
                                                                                        attack_model=m_attack_model,
                                                                                        keyset_size=keyset_size,
-                                                                                       keypool_size=m_key_pool_size,
+                                                                                       keypool_size=m_keypool_size,
                                                                                        num_compromised_nodes=num_compromised_nodes)
                     results.append([compromised_nodes, is_success, checks])
 
