@@ -7,8 +7,10 @@
 #include "../ff.h"
 #include <cmath>
 #include "../tree_alg.h"
-//ff fff(256);
+#include <cstdlib> // Include the necessary header for rand() and srand()
+#include <ctime>   // Include the necessary header for time()
+ff fff_tree(256);
+
+//hpacket h1();
 
 
-//treeGenerator(){
-//};

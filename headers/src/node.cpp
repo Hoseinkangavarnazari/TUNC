@@ -11,7 +11,7 @@
 // Include your tud.h header
 
 std::vector<uint8_t> node_codedSymbol;
-std::vector<uint8_t> node_MAC;
+std::vector<std::vector<uint8_t>> node_MAC;
 std::vector<std::vector<uint8_t>> node_publickeyset;
 std::vector<uint8_t> node_privateKey;
 int node_number_of_mac;
@@ -36,7 +36,7 @@ std::vector<NodeInput> values;                                // Values of each 
 //};
 /////
 
-hpacket hh(node_codedSymbol, node_MAC, node_publickeyset, node_privateKey, node_number_of_mac, node_coefficientvector);
+hpacket hh(node_publickeyset, node_MAC, node_publickeyset, node_privateKey, node_number_of_mac, node_coefficientvector);
 rlnc_decoder decoder(node_generationSize, node_symbolSize, node_fieldSize);
 
 // class Graph {
@@ -86,25 +86,26 @@ void performOperations(int numNodes)
         node_codedSymbol = nodeDataInput[nodeIndex][dataCounter];
       hh.macCalculator();
       hh.signCalculator();
-      hh.packetAppender();};
-    }
+     // hh.packetAppender();
+     };
+    };
     // Intermediate Node operations
-    else if (0 < nodeIndex < numNodes - 1)
-    {
+    //else if (0 < nodeIndex < numNodes - 1)
+    //{
       for (int dataCounter = 0; dataCounter <nodeDataInput[nodeIndex].size(); dataCounter++){
         node_codedSymbol = nodeDataInput[nodeIndex][dataCounter];
-      hh.Verifier();
+      //hh.macVerifier();
       hh.packetCombiner();};
-    }
+    //}
     // Sink Node operations
-    else if (nodeIndex == numNodes - 1)
-    {
+    //else if (nodeIndex == numNodes - 1)
+    //{
       for (int dataCounter = 0; dataCounter <nodeDataInput[nodeIndex].size(); dataCounter++){
         node_codedSymbol = nodeDataInput[nodeIndex][dataCounter];
-      hh.Verifier();
+     // hh.Verifier();
       decoder.decode();};
   
-    }
+ //   }
   }
 }
 
