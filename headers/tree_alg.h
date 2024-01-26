@@ -11,11 +11,9 @@
 #include <cstdint> // for uint8_t
 #include "hpacket.h"   
 
-class treeGenerator
+class TreeGenerator
 {
 public :
-
-        treeGenerator();
-
+ 
 };
 #endif 

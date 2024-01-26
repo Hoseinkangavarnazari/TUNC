@@ -217,6 +217,8 @@ CMakeFiles/runner.out.dir/main.cpp.o: \
  /home/akif/Documents/TUNC/TUNC/headers/mac_calculator.h \
  /home/akif/Documents/TUNC/TUNC/headers/sign_calculator.h \
  /home/akif/Documents/TUNC/TUNC/headers/hpacket.h \
- /home/akif/Documents/TUNC/TUNC/headers/node.h /usr/include/c++/11/chrono \
- /usr/include/c++/11/ratio /usr/include/c++/11/ctime \
- /usr/include/c++/11/bits/parse_numbers.h
+ /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
+ /usr/include/c++/11/ctime /usr/include/c++/11/bits/parse_numbers.h \
+ /usr/include/c++/11/set /usr/include/c++/11/bits/stl_tree.h \
+ /usr/include/c++/11/bits/stl_set.h \
+ /usr/include/c++/11/bits/stl_multiset.h

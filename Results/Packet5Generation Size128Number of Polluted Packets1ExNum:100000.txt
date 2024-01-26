@@ -1,0 +1,4 @@
+PacketSize:5-GenerationSize:128Pollution Number1-SImple Ver Result:128
+PacketSize:5-GenerationSize:128Pollution Number1-Tree VerResult:16
+PacketSize:5-GenerationSize:128Pollution Number1-AR Tree Ver Result:66
+

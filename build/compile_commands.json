@@ -51,6 +51,11 @@
 },
 {
   "directory": "/home/akif/Documents/TUNC/TUNC/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/tree_alg.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/tree_alg.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/tree_alg.cpp"
+},
+{
+  "directory": "/home/akif/Documents/TUNC/TUNC/build",
   "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/main.cpp.o -c /home/akif/Documents/TUNC/TUNC/main.cpp",
   "file": "/home/akif/Documents/TUNC/TUNC/main.cpp"
 }
