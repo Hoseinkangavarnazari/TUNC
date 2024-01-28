@@ -61,7 +61,7 @@ def merge_results(from_folder, to_folder):
 if __name__ == '__main__':
 
     if platform.system() == 'Darwin':
-        m_result_folder = '/Users/xingyuzhou/Downloads/dpa_mhd_our_106'
+        m_result_folder = '/Users/xingyuzhou/Downloads/dpa_cff_our_106_22'
     else:
         m_result_folder = '/home/xingyu/Downloads/cff10w'
 
