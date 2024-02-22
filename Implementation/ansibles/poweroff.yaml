@@ -1,0 +1,9 @@
+---
+- name: Power off remote hosts immediately
+  hosts: all
+  become: yes
+  tasks:
+    - name: Power off the host
+      ansible.builtin.shell: 
+        cmd: poweroff
+      ignore_errors: yes

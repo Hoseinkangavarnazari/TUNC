@@ -1,0 +1,38 @@
+---
+- name: Start listening on remote hosts
+  hosts: all
+  become: yes
+  vars:
+    myport: 12345
+  tasks:
+    - name: Free up port {{ myport }}
+      ansible.builtin.shell: |
+        fuser -k {{ myport }}/tcp
+      ignore_errors: true
+
+    - name: Remove old log file on remote hosts
+      ansible.builtin.file:
+        path: /home/xingyuzhou/log.txt
+        state: absent
+
+    - name: Remove old reiceived file
+      ansible.builtin.file:
+        path: /home/xingyuzhou/received_data.txt
+        state: absent
+
+    - name: Activate venv and run RPi_sink.py
+      ansible.builtin.shell: |
+        source /home/xingyuzhou/venvRPi/bin/activate
+        nohup python3 /home/xingyuzhou/RPis/RPi_sink.py &
+      args:
+        executable: /bin/bash
+
+- name: Remove log files on control host
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Remove old log file on control host
+      ansible.builtin.file:
+        path: /Users/xingyuzhou/NoteOnGithub/Diplomarbeit/Codes/sender_log.txt
+        state: absent

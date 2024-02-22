@@ -1,0 +1,16 @@
+---
+- name: Fetch Results
+  hosts: all
+  become: yes
+  tasks:
+    - name: Fetch log files
+      ansible.builtin.fetch:
+        src: /home/xingyuzhou/log.txt
+        dest: /Users/xingyuzhou/Downloads/logs/{{ inventory_hostname }}_log.txt
+        flat: yes
+
+    - name: Fetch received files
+      ansible.builtin.fetch:
+        src: /home/xingyuzhou/received_data.txt
+        dest: /Users/xingyuzhou/Downloads/received/{{ inventory_hostname }}_received.txt
+        flat: yes

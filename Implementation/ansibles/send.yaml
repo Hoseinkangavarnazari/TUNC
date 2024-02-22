@@ -1,0 +1,13 @@
+---
+- name: Send data from control host
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Activate venv and run RPi_source.py
+      ansible.builtin.shell: |
+        cd /Users/xingyuzhou/NoteOnGithub/Diplomarbeit/Codes
+        source ./venvDip/bin/activate
+        python3 ./RPis/RPi_source.py
+      args:
+        executable: /bin/bash

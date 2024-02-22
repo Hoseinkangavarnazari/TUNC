@@ -1,0 +1,47 @@
+---
+- name: Initial Setup
+  hosts: all
+  become: yes
+  tasks:
+    - name: APT Update and Upgrade
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: yes
+        cache_valid_time: 3600  # Optional: only run if last update was more than 3600 seconds ago
+
+    - name: Check RPis exists
+      ansible.builtin.stat:
+        path: "/home/xingyuzhou/RPis"
+      register: dir_stat
+
+    - name: Remove old RPis folder
+      ansible.builtin.file:
+        path: "/home/xingyuzhou/RPis"
+        state: absent
+      when: dir_stat.stat.exists
+
+    - name: Copy new RPis folder
+      ansible.builtin.copy:
+        src: "/Users/xingyuzhou/NoteOnGithub/Diplomarbeit/Codes/RPis"
+        dest: "/home/xingyuzhou/"
+        remote_src: no
+
+    - name: Install Python3-venv if not already installed
+      ansible.builtin.package:
+        name: python3-venv
+        state: present
+
+    - name: Check venvRPi exists
+      ansible.builtin.stat:
+        path: "/home/xingyuzhou/venvRPi"
+      register: venv_stat
+
+    - name: Create venvRPi
+      ansible.builtin.shell:
+        cmd: python3 -m venv /home/xingyuzhou/venvRPi
+      when: not venv_stat.stat.exists
+      register: venv_created
+
+    - name: Install requirements.txt
+      ansible.builtin.shell:
+        cmd: "/home/xingyuzhou/venvRPi/bin/pip install -r /home/xingyuzhou/RPis/requirements.txt"
