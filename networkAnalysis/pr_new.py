@@ -1,7 +1,9 @@
 import argparse
+import csv
 import math
 import os
 import platform
+import time
 
 import networkx as nx
 import random
@@ -53,7 +55,7 @@ class NGraph:
 
         if filename is None:
             # filename = f'graph_{self.type}_{self.nxg.number_of_nodes()}nodes.csv'
-            filename = f'graph_temp.csv'
+            filename = f'temp_snapshot.csv'
 
         df_rm = nx.to_pandas_adjacency(self.nxg, dtype=int)
 
@@ -235,6 +237,67 @@ class KDC:
         self.__keypool_size = key_pool_size
         self.__keypool = {f'k{i}' for i in range(self.__keypool_size)}
 
+    def distribute_graph_coloring_greedy(self) -> int:
+        self.reset_distribution()
+
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
+        subgraph = self.graph.nxg.subgraph(non_source_nodes)
+
+        result = {node: -1 for node in subgraph.nodes}
+        for node in subgraph.nodes:
+            available_colors = set(range(subgraph.number_of_nodes()))
+            for neighbor in subgraph.neighbors(node):
+                if result[neighbor] != -1:
+                    available_colors.discard(result[neighbor])
+            result[node] = min(available_colors)
+
+        num_colors = max(result.values()) + 1
+        self.set_keypool_size(num_colors)
+
+        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
+        for node in source_nodes:
+            self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
+
+        for node, color in result.items():
+            self.assign_keyset_to_r_node(node, self.encode_keys({f'k{color}'}, num_colors))
+
+        return num_colors
+
+
+    def distribute_graph_coloring_welsh_powell(self) -> int:
+        self.reset_distribution()
+
+        non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
+        subgraph = self.graph.nxg.subgraph(non_source_nodes)
+
+        sorted_nodes = sorted(subgraph.nodes, key=lambda x: subgraph.degree[x], reverse=True)
+        result = {node: -1 for node in subgraph.nodes}
+        result[sorted_nodes[0]] = 0
+
+        for i in range(1, subgraph.number_of_nodes()):
+            available_colors = [True] * subgraph.number_of_nodes()
+            for neighbor in subgraph.neighbors(sorted_nodes[i]):
+                if result[neighbor] != -1:
+                    available_colors[result[neighbor]] = False
+
+            color = 0
+            while not available_colors[color]:
+                color += 1
+
+            result[sorted_nodes[i]] = color
+
+        num_colors = max(result.values()) + 1
+        self.set_keypool_size(num_colors)
+
+        source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
+        for node in source_nodes:
+            self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
+
+        for node, color in result.items():
+            self.assign_keyset_to_r_node(node, self.encode_keys({f'k{color}'}, num_colors))
+
+        return num_colors
+
     def distribute_fix_num_keys_randomly(self, keyset_size: int, keypool_size: int):
         """
         Distributes a fixed number of keys randomly to each non-source node.
@@ -253,24 +316,22 @@ class KDC:
             keyset_b = self.encode_keys(random.sample(sorted(self.get_keypool()), keyset_size), keypool_size)
             self.assign_keyset_to_r_node(node, keyset_b)
 
-    def distribute_keys_with_CFF(self, max_c_nodes: int):
+    def distribute_keys_with_CFF(self, max_c_nodes: int) -> Tuple[float, int]:
 
         self.reset_distribution()
 
-        # use setup in dual-HMAC
-        q = 10 ** (-3)  # ten to the power of -3
-        Pr = 1 / (2 * (max_c_nodes + 1))
+        q = 10 ** (-3)
         L = math.ceil(math.e * (max_c_nodes + 1) * math.log(1 / q))    # math.e: natural number e, math.log: natural logarithm (ln)
-        avg_keyset_size = math.ceil((math.e / 2) * math.log(1 / q))
 
         self.set_keypool_size(L)
         source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] == 's']
         for node in source_nodes:
             self.graph.nxg.nodes[node]['keys'] = self.get_keypool().copy()
 
-        # TODO: If sink nodes can't be compromised, why don't we assign all the keys to the sink nodes?
         non_source_nodes = [node for node in self.graph.nxg.nodes if self.graph.nxg.nodes[node]['node_type'] != 's']
         subgraph = self.graph.nxg.subgraph(non_source_nodes)
+
+        keyset_size = []
         for node in subgraph.nodes:
             keyset = set()
             for key in self.get_keypool():
@@ -279,6 +340,10 @@ class KDC:
 
             keyset_b = self.encode_keys(keyset, L)
             self.assign_keyset_to_r_node(node, keyset_b)
+            keyset_size.append(len(keyset))
+
+        avg_keyset_size = sum(keyset_size) / len(keyset_size)
+        return avg_keyset_size, L
 
     def distribute_fix_num_keys_with_mhd(self, keyset_size: int, keypool_size: int):
         """
@@ -434,13 +499,23 @@ class Attacker:
             self.graph.nxg.nodes[node]['compromised'] = False
         self.keypool_compromised.clear()
 
-    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, keyset_size: int | None, keypool_size: int | None, num_compromised_nodes: int) -> Tuple[List[int], int, int]:
+    def run_single_attack(self, attack_type: str, distr_strategy: str, attack_model: str, keyset_size: int | None, keypool_size: int | None, num_compromised_nodes: int):
         if distr_strategy == 'rd':
+            actual_avg_keyset_size = keyset_size
+            actual_keypool_size = keypool_size
             self.kdc.distribute_fix_num_keys_randomly(keyset_size, keypool_size)
         elif distr_strategy == 'mhd':
+            actual_avg_keyset_size = keyset_size
+            actual_keypool_size = keypool_size
             self.kdc.distribute_fix_num_keys_with_mhd(keyset_size, keypool_size)
         elif distr_strategy == 'cff':
-            self.kdc.distribute_keys_with_CFF(max_c_nodes=num_compromised_nodes)
+            actual_avg_keyset_size, actual_keypool_size = self.kdc.distribute_keys_with_CFF(max_c_nodes=num_compromised_nodes)
+        elif distr_strategy == 'greedy':
+            actual_avg_keyset_size = 1
+            actual_keypool_size = self.kdc.distribute_graph_coloring_greedy()
+        elif distr_strategy == 'wp':
+            actual_avg_keyset_size = 1
+            actual_keypool_size = self.kdc.distribute_graph_coloring_welsh_powell()
         else:
             raise ValueError(f"Unknown distribution strategy: {distr_strategy}")
 
@@ -494,7 +569,6 @@ class Attacker:
                     else:
                         # TODO: What if there are MACs left that were modified by the last compromised node?
                         d = len(self.graph.nxg.nodes[node]['keys'] - self.graph.nxg.nodes[latest_compromised_node]['keys'])
-                        # TODO: Can I make possibility 10 times higher by let it > 100?
                         if random.randint(1, self.finite_field_size ** d) != 1:
                             is_success = 0
                             break
@@ -539,7 +613,59 @@ class Attacker:
                         is_success = 1
                         break
 
-        return compromised_nodes, is_success, count_checks
+        return compromised_nodes, is_success, count_checks, actual_avg_keyset_size, actual_keypool_size
+
+
+def measure_time(method, *args, **kwargs):
+    start = time.time()
+    method(*args, **kwargs)
+    end = time.time()
+    return end - start
+
+
+def compare_time():
+    total_runs = 1000
+    time_greedy = 0
+    time_wp = 0
+    time_cff = 0
+    time_mhd = 0
+    time_mhd_2 = 0
+
+    g1 = NGraph()
+    g1.restore_snapshot(filename='/Users/xingyuzhou/NoteOnGithub/Diplomarbeit/Codes/networkAnalysis/networks/10n.csv')
+    g1.pick_path()
+
+    kdc = KDC(graph=g1)
+
+    for _ in range(total_runs):
+        time_greedy += measure_time(kdc.distribute_graph_coloring_greedy)
+        time_wp += measure_time(kdc.distribute_graph_coloring_welsh_powell)
+        time_cff += measure_time(kdc.distribute_keys_with_CFF, max_c_nodes=4)
+        time_mhd += measure_time(kdc.distribute_fix_num_keys_with_mhd, keyset_size=5, keypool_size=10)
+        time_mhd_2 += measure_time(kdc.distribute_fix_num_keys_with_mhd, keyset_size=5, keypool_size=11)
+
+    # Calculate average times
+    avg_time_greedy = (time_greedy / total_runs) * 1000
+    avg_time_wp = (time_wp / total_runs) * 1000
+    avg_time_cff = (time_cff / total_runs) * 1000
+    avg_time_mhd = (time_mhd / total_runs) * 1000
+    avg_time_mhd_2 = (time_mhd_2 / total_runs) * 1000
+
+    methods = ['Greedy MKA', 'Welsh-Powell MKA', 'CFF-based', 'Max-Hamming PKA\n(Config 1)', 'Max-Hamming PKA\n(Config 2)']
+    times = [avg_time_greedy, avg_time_wp, avg_time_cff, avg_time_mhd, avg_time_mhd_2]
+
+    with open('times.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(['Method', 'Time (ms)'])
+        for i in range(len(methods)):
+            writer.writerow([methods[i], times[i]])
+
+    plt.bar(methods, times)
+    plt.xlabel('Key Distribution Mechanism')
+    plt.ylabel('Time (ms)')
+    plt.yscale('log')
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.show()
 
 
 def demo():
@@ -550,23 +676,10 @@ def demo():
     g1.pick_path()
 
     kdc = KDC(graph=g1)
-
-    compromised_nodes, is_success, count_checks = attacker.run_single_attack(attack_type='dpa',
-                                                                                distr_strategy='mhd',
-                                                                                attack_model='our',
-                                                                                keyset_size=2,
-                                                                                keypool_size=4,
-                                                                                num_compromised_nodes=2)
-    print(f'compromised_nodes: {compromised_nodes}, is_success: {is_success}, count_checks: {count_checks}')
-    g1.take_snapshot(filename='/Users/xingyuzhou/10n.csv')
+    # kdc.distribute_graph_coloring_greedy()
+    kdc.distribute_graph_coloring_welsh_powell()
+    g1.take_snapshot()
     g1.visualize()
-    # compromised_nodes, is_success, count_checks = attacker.run_single_attack(attack_type='dpa',
-    #                                                                          distr_strategy='mhd',
-    #                                                                          attack_model='our',
-    #                                                                          keyset_size=10,
-    #                                                                          keypool_size=20,
-    #                                                                          num_compromised_nodes=3)
-    # print(f'compromised_nodes: {compromised_nodes}, is_success: {is_success}, count_checks: {count_checks}')
 
 
 def run_simulation(batch, total_batches):
@@ -576,15 +689,15 @@ def run_simulation(batch, total_batches):
         g1.restore_snapshot(filename='/Users/xingyuzhou/NoteOnGithub/Diplomarbeit/Codes/networkAnalysis/networks/10n.csv')
         m_result_folder = '/Users/xingyuzhou/Downloads/dpa_cff_our_106_22'
     else:
-        g1.restore_snapshot(filename='networkAnalysis/networks/10n.csv')
-        m_result_folder = '/home/xingyu/Downloads/dpa_mhd_our_106_23'
+        g1.restore_snapshot(filename='/home/xingyu/NoteOnGithub/Diplomarbeit/Codes/networkAnalysis/networks/10n.csv')
+        m_result_folder = '/home/xingyu/Downloads/dpa_mhd_our_5_106_22'
 
     g1.pick_path()
 
-    m_keypool_size = 10
+    m_keypool_size = 11
     m_total_runs = 10 ** 6
     m_attack_type = 'dpa'       # tpa | dpa
-    m_distr_strategy = 'cff'  # rd | mhd | cff
+    m_distr_strategy = 'cff'  # rd | mhd | cff | greedy | wp
     m_attack_model = 'our'      # our | other
 
     kdc = KDC(graph=g1)
@@ -600,7 +713,7 @@ def run_simulation(batch, total_batches):
         m_runs = m_total_runs // total_batches
 
     for num_compromised_nodes in range(1, max_num_compromised_nodes + 1, 1):
-    # for num_compromised_nodes in [8]:
+    # for num_compromised_nodes in [2]:
 
         if m_distr_strategy == 'cff':
             results = []
@@ -610,20 +723,39 @@ def run_simulation(batch, total_batches):
                 continue
 
             for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type}_{m_distr_strategy}_{m_attack_model} (batch={batch}, c={num_compromised_nodes}/{max_num_compromised_nodes})'):
-                compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
+                compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size = attacker.run_single_attack(attack_type=m_attack_type,
                                                                                    distr_strategy=m_distr_strategy,
                                                                                    attack_model=m_attack_model,
                                                                                    keyset_size=None,
                                                                                    keypool_size=None,
                                                                                    num_compromised_nodes=num_compromised_nodes)
-                results.append([compromised_nodes, is_success, checks])
+                results.append([compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size])
 
-            result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks'])
+            result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks', 'avg_keyset_size', 'keypool_size'])
+            result.to_csv(file_name, index=False)
+
+        elif m_distr_strategy in ['greedy', 'wp']:
+            results = []
+            file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c.csv'
+            if os.path.exists(file_name):
+                print(f'File {file_name} already exists, skipping...')
+                continue
+
+            for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type}_{m_distr_strategy}_{m_attack_model} (batch={batch}, c={num_compromised_nodes}/{max_num_compromised_nodes})'):
+                compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size = attacker.run_single_attack(attack_type=m_attack_type,
+                                                                                   distr_strategy=m_distr_strategy,
+                                                                                   attack_model=m_attack_model,
+                                                                                   keyset_size=None,
+                                                                                   keypool_size=None,
+                                                                                   num_compromised_nodes=num_compromised_nodes)
+                results.append([compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size])
+
+            result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks', 'avg_keyset_size', 'keypool_size'])
             result.to_csv(file_name, index=False)
 
         else:
-            for keyset_size in range(1, m_keypool_size, 2):
-            # for keyset_size in [3]:
+            # for keyset_size in range(1, m_keypool_size, 1):
+            for keyset_size in [5]:
                 results = []
                 file_name = f'{m_result_folder}/csv{batch}_{m_attack_type}_{m_distr_strategy}_{m_attack_model}_{m_runs}runs_{num_compromised_nodes}c_{keyset_size}keys.csv'
 
@@ -632,13 +764,13 @@ def run_simulation(batch, total_batches):
                     continue
 
                 for _ in tqdm(range(m_runs), desc=f'Running {m_attack_type}_{m_distr_strategy}_{m_attack_model} (batch={batch}, c={num_compromised_nodes}/{max_num_compromised_nodes}, keys={keyset_size}/{m_keypool_size})'):
-                    compromised_nodes, is_success, checks = attacker.run_single_attack(attack_type=m_attack_type,
+                    compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size = attacker.run_single_attack(attack_type=m_attack_type,
                                                                                        distr_strategy=m_distr_strategy,
                                                                                        attack_model=m_attack_model,
                                                                                        keyset_size=keyset_size,
                                                                                        keypool_size=m_keypool_size,
                                                                                        num_compromised_nodes=num_compromised_nodes)
-                    results.append([compromised_nodes, is_success, checks])
+                    results.append([compromised_nodes, is_success, checks, actual_avg_keyset_size, actual_keypool_size])
 
                 result = pd.DataFrame(results, columns=['compromised_nodes', 'is_success', 'count_checks'])
                 result.to_csv(file_name, index=False)
@@ -647,8 +779,10 @@ def run_simulation(batch, total_batches):
 if __name__ == "__main__":
     # demo()
 
-    parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
-    parser.add_argument('batch', type=int, help='Current batch number for the simulation')
-    parser.add_argument('total_batches', type=int, help='Total number of batches for the simulation')
-    args = parser.parse_args()
-    run_simulation(batch=args.batch, total_batches=args.total_batches)  # for example: python3 pr_new.py 1 10
+    # parser = argparse.ArgumentParser(description='Run simulation with specified batch number')
+    # parser.add_argument('batch', type=int, help='Current batch number for the simulation')
+    # parser.add_argument('total_batches', type=int, help='Total number of batches for the simulation')
+    # args = parser.parse_args()
+    # run_simulation(batch=args.batch, total_batches=args.total_batches)  # use start.sh
+
+    compare_time()
