@@ -53,8 +53,8 @@ class Graph:
 # Example usage
 if __name__ == "__main__":
     # Create a sample graph
-    g = Graph(6)
-    g.generate_random_graph(16)  # Generate a random graph with 8 edges
+    g = Graph(10)
+    g.generate_random_graph(25)  # Generate a random graph with 8 edges
 
     # Print the generated graph
     print("Generated Graph:")
