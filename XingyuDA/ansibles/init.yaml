@@ -1,0 +1,21 @@
+---
+- name: Copy Scripts folder to remote hosts and ensure scripts are executable
+  hosts: myhosts
+  gather_facts: no
+  vars:
+    local_dir: "/home/xingyu/NoteOnGithub/Diplomarbeit/Codes/RPis"
+    remote_dir: "/home/{{ ansible_user }}/RPis"
+
+  tasks:
+    - name: Ensure the remote directory exists
+      ansible.builtin.file:
+        path: "{{ remote_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Synchronize the directory from local to remote
+      ansible.builtin.synchronize:
+        src: "{{ local_dir }}"
+        dest: "{{ remote_dir }}"
+        delete: yes # This makes sure the destination is an exact copy of the source
+        recursive: yes

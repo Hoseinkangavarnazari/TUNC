@@ -1,0 +1,76 @@
+- name: Fetch logs and .out files
+  hosts: myhosts
+  gather_facts: no
+
+  tasks:
+    - name: Copy log of A to the specified location
+      ansible.builtin.shell: |
+        find /home/xingyu/NoteOnGithub/Diplomarbeit/Codes/RPis/ -name "A_log_*.txt" -exec cp {} /home/xingyu/ \;
+      delegate_to: localhost
+      run_once: true
+
+    - name: Find B_log_* files on host B
+      ansible.builtin.find:
+        paths: "/home/{{ ansible_user }}/RPis/RPis/"
+        patterns: "B_log_*.txt"
+      register: b_log_files
+      when: inventory_hostname == 'B'
+
+    - name: Fetch each found B_log_* file from host B
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "/home/xingyu/{{ item.path | basename }}"
+        flat: yes
+      loop: "{{ b_log_files.files }}"
+      when: inventory_hostname == 'B' and b_log_files.matched > 0
+
+    - name: Fetch B.out from host B
+      ansible.builtin.fetch:
+        src: "/home/{{ ansible_user }}/RPis/RPis/B.out"
+        dest: "/home/xingyu/B.out"
+        flat: yes
+      when: inventory_hostname == 'B'
+
+    - name: Find C_log_* files on host C
+      ansible.builtin.find:
+        paths: "/home/{{ ansible_user }}/RPis/RPis/"
+        patterns: "C_log_*.txt"
+      register: c_log_files
+      when: inventory_hostname == 'C'
+
+    - name: Fetch each found C_log_* file from host C
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "/home/xingyu/{{ item.path | basename }}"
+        flat: yes
+      loop: "{{ c_log_files.files }}"
+      when: inventory_hostname == 'C' and c_log_files.matched > 0
+
+    - name: Fetch C.out from host C
+      ansible.builtin.fetch:
+        src: "/home/{{ ansible_user }}/RPis/RPis/C.out"
+        dest: "/home/xingyu/C.out"
+        flat: yes
+      when: inventory_hostname == 'C'
+
+    - name: Find D_log_* files on host D
+      ansible.builtin.find:
+        paths: "/home/{{ ansible_user }}/RPis/RPis/"
+        patterns: "D_log_*.txt"
+      register: d_log_files
+      when: inventory_hostname == 'D'
+
+    - name: Fetch each found D_log_* file from host D
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "/home/xingyu/{{ item.path | basename }}"
+        flat: yes
+      loop: "{{ d_log_files.files }}"
+      when: inventory_hostname == 'D' and d_log_files.matched > 0
+
+    - name: Fetch D.out from host D
+      ansible.builtin.fetch:
+        src: "/home/{{ ansible_user }}/RPis/RPis/D.out"
+        dest: "/home/xingyu/D.out"
+        flat: yes
+      when: inventory_hostname == 'D'

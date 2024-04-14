@@ -1,0 +1,26 @@
+---
+- name: Release ports and run scripts with systemd-inhibit
+  hosts: myhosts
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Free up ports
+      ansible.builtin.shell: |
+        sudo lsof -t -i:10000 | xargs sudo kill -9
+      ignore_errors: true
+
+    - name: Run B.py on host B with systemd-inhibit
+      ansible.builtin.shell: |
+        sudo systemd-inhibit --what=handle-lid-switch:sleep:idle --why="Prevent sleep while B.py is running" --mode=block bash -c "source /home/{{ ansible_user }}/venvXing/bin/activate && cd /home/{{ ansible_user }}/RPis/RPis && nohup python3 ./B.py --KD {{ KD }} --stra {{ stra }} --batch {{ batch }} > B.out 2>&1 &"
+      when: inventory_hostname == 'B'
+
+    - name: Run C.py on host C with systemd-inhibit
+      ansible.builtin.shell: |
+        sudo systemd-inhibit --what=handle-lid-switch:sleep:idle --why="Prevent sleep while B.py is running" --mode=block bash -c "source /home/{{ ansible_user }}/venvXing/bin/activate && cd /home/{{ ansible_user }}/RPis/RPis && nohup python3 ./C.py --KD {{ KD }} --stra {{ stra }} --batch {{ batch }} > C.out 2>&1 &"
+      when: inventory_hostname == 'C'
+
+    - name: Run D.py on host D with systemd-inhibit
+      ansible.builtin.shell: |
+        sudo systemd-inhibit --what=handle-lid-switch:sleep:idle --why="Prevent sleep while B.py is running" --mode=block bash -c "source /home/{{ ansible_user }}/venvXing/bin/activate && cd /home/{{ ansible_user }}/RPis/RPis && nohup python3 ./D.py --KD {{ KD }} --stra {{ stra }} --batch {{ batch }} > D.out 2>&1 &"
+      when: inventory_hostname == 'D'

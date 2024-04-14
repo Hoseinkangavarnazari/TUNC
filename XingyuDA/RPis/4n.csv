@@ -1,0 +1,5 @@
+,0,1,2,3,node_type,compromised,keys
+0,0,1,1,0,s,False,"{'k0', 'k2'}"
+1,1,0,1,0,r,True,"{'k3', 'k1'}"
+2,1,1,0,1,r,False,"{'k0', 'k2'}"
+3,0,0,1,0,t,False,"{'k3', 'k1'}"
