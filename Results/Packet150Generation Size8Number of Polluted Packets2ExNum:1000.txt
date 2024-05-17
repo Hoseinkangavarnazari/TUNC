@@ -1,0 +1,4 @@
+PacketSize:150-GenerationSize:8Pollution Number2-SImple Ver Check Number:8
+PacketSize:150-GenerationSize:8Pollution Number2-Tree VerResult:10
+PacketSize:150-GenerationSize:8Pollution Number2-AR Tree Ver Result:7
+

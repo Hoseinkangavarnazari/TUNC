@@ -1,0 +1,16 @@
+PacketSize:100-GenerationSize:8Pollution Number2-SImple Ver Check Number:8
+PacketSize:100-GenerationSize:8Pollution Number2-Tree VerResult:10
+PacketSize:100-GenerationSize:8Pollution Number2-AR Tree Ver Result:7
+
+PacketSize:100-GenerationSize:8Pollution Number2-SImple Ver Check Number:8
+PacketSize:100-GenerationSize:8Pollution Number2-Tree VerResult:10
+PacketSize:100-GenerationSize:8Pollution Number2-AR Tree Ver Result:7
+
+PacketSize:100-GenerationSize:8Pollution Number2-SImple Ver Check Number:8
+PacketSize:100-GenerationSize:8Pollution Number2-Tree VerResult:10
+PacketSize:100-GenerationSize:8Pollution Number2-AR Tree Ver Result:7
+
+PacketSize:100-GenerationSize:8Pollution Number2-SImple Ver Check Number:8
+PacketSize:100-GenerationSize:8Pollution Number2-Tree VerResult:10
+PacketSize:100-GenerationSize:8Pollution Number2-AR Tree Ver Result:7
+
