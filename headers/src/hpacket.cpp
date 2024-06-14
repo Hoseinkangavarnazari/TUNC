@@ -183,23 +183,23 @@ bool hpacket::macVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<st
 {
   // ff ff(256);
   ///////////////////////////////////
-   std::vector<uint8_t> zeroVector(number_of_mac, 0);
+   std::vector<uint8_t> zeroVector(_assignedKeyset.size(), 0);
    MACs_multi_verify= zeroVector;
    verifier_MACs= zeroVector;
 
-  for (int i = 0; i < number_of_mac; i++)
+  for (int i = 0; i < _assignedKeyset.size(); i++)
   {
     uint8_t currentMAC_ver = 0;
     uint8_t crnt_mltp_mac = 0;
     
-    for (int j = 0; j < this->h_codedSymbol[0].size(); j++)
+    for (int j = 0; j <  _assignedKeyset[0].size()-1; j++)
     {
 
       currentMAC_ver = currentMAC_ver ^ fff.mutiply(_assignedKeyset[i][j], verifiedDataPacket[j]); // working
        //   std::cout << "here";
 
     };
-    crnt_mltp_mac = fff.mutiply(_assignedKeyset[i][_assignedKeyset[i].size() - 1], verifiedDataPacket[h_codedSymbol[0].size()+i]); 
+    crnt_mltp_mac = fff.mutiply(_assignedKeyset[i][_assignedKeyset[i].size() - 1], verifiedDataPacket[_assignedKeyset[0].size()+i-1]); 
     MACs_multi_verify[i]=crnt_mltp_mac;
     verifier_MACs[i]=currentMAC_ver; // working
   };
@@ -243,7 +243,7 @@ bool hpacket::signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<u
 
   for (int j = 0; j < number_of_mac; j++)
   {
-    uint8_t akif_verifier = fff.mutiply(_publicKey[j], verifiedDataPacket[h_codedSymbol[0].size()+j]);
+    uint8_t akif_verifier = fff.mutiply(_publicKey[j], verifiedDataPacket[verifiedDataPacket.size()-number_of_mac-1+j]);
     this->c_sign_result1.push_back(akif_verifier);
     mac_verifier_sum = mac_verifier_sum ^ akif_verifier;
   };
@@ -313,23 +313,23 @@ for(int i=0; i<_pollutedPacketIndex.size(); i++){
     return received_packets_list;
 };
 
-std::vector<uint8_t> hpacket::pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet){
+std::vector<uint8_t> hpacket::pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet, int a){
    
    //////Randomly select the index of the packet for pollution////////////////
-       std::srand(static_cast<unsigned int>(std::time(0)));
+      // std::srand(static_cast<unsigned int>(std::time(0)));
    // received_packets_list=h_appendedSymbol;
    vectorSize=_received_packet.size() ;
    //   std::cout << "here";
     int modifiedEntryIndex = std::rand() % h_codedSymbol[0].size() ;  //Data pollution
        //   std::cout << "here";
-    std::vector<uint8_t> zeroVector(vectorSize, 0);      
+    std::vector<uint8_t> zeroVector(vectorSize, a+1);      
 //    std::cout << "here";
-    zeroVector[modifiedEntryIndex]=1;
+    zeroVector[modifiedEntryIndex]=modifiedEntryIndex;
         //  std::cout << "here";
     _received_packet= fff.v2vAddition(_received_packet,zeroVector);
 
          // std::cout << "here";
-    return _received_packet;};
+    return zeroVector;};
     //std::vector<uint8_t> hpacket:: intelligentpollutionGeneration(std::vector<uint8_t> _packet,std::vector<std::vector<uint8_t>> _assignedKeys){
       //std::vector<uint8_t> b;
       //b[0]= fff.mutiply(_assignedKeys[0][2],_packet.back());
@@ -345,10 +345,11 @@ std::vector<uint8_t> hpacket::pollutionGenerationONEPACKET(std::vector<uint8_t> 
                /////////////Tree Generator////////////////////
 
 std::vector<std::vector<std::vector<uint8_t>>> hpacket::treeGenerator(std::vector<std::vector<uint8_t>> received_packets_list, int _numberOfLayers,int leaves, int packet_size){
+
     std::vector<uint8_t> zeroVector(received_packets_list[0].size(), 0);
-       std::vector<std::vector<std::vector<uint8_t>>> zero3dmatrice(_numberOfLayers, std::vector<std::vector<uint8_t>>(received_packets_list.size(), std::vector<uint8_t>(packet_size, 0)));
+       std::vector<std::vector<std::vector<uint8_t>>> zero3dmatrice(_numberOfLayers, std::vector<std::vector<uint8_t>>(received_packets_list.size(), std::vector<uint8_t>(received_packets_list[0].size(), 0)));
     // _numberOfLayers = number_of_layers;
-    generatedTree=zero3dmatrice;
+  std::vector<std::vector<std::vector<uint8_t>>>  generatedTree=zero3dmatrice;
 
       generatedTree[0]=received_packets_list;   //Bottom layer is the received packets
 
@@ -370,7 +371,7 @@ std::vector<std::vector<std::vector<uint8_t>>> hpacket::treeGenerator(std::vecto
                /////////// Tree Based Algorithm 2 ///////////
 
 
-    int hpacket::arTreeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> ARvector, int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey){
+int hpacket::arTreeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> ARvector, int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey){
     int ar_tree_verification_counter=1;
     bool sum_result_ar_alg=true;
     bool base_result_ar_alg=true;
@@ -416,7 +417,10 @@ std::vector<std::vector<std::vector<uint8_t>>> hpacket::treeGenerator(std::vecto
   return ar_tree_verification_counter;
 };
 
-std::vector<int> hpacket::arTreeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> path_index_vector, std::vector<int> ARvector, int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey){
+std::vector<int> hpacket::arTreeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> ARvector, int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey){
+   
+   // std::cout << "here";
+    
     std::vector<int> arTreeVerifierNEW_output= {0,0};
     std::vector<int> updated_ar_vector = ARvector;
     int ar_tree_verification_counter=1;
@@ -425,7 +429,7 @@ std::vector<int> hpacket::arTreeVerifierNEW(std::vector<std::vector<std::vector<
     bool base_result_ar_alg=true;
     sum_result_ar_alg = macVerifier(received_packets_tree[_layer-1][0],_assignedKeyset) && signVerifier(received_packets_tree[_layer-1][0],_publicKey);     
 
-    std::vector<int> b = updated_ar_vector; // Copy vector a to b
+    std::vector<int> b = updated_ar_vector; // Copy updated AR vector  to b
      // std::cout << "here";
 
     while(sum_result_ar_alg==false && updated_ar_vector.size()>0){
@@ -452,8 +456,8 @@ std::vector<int> hpacket::arTreeVerifierNEW(std::vector<std::vector<std::vector<
       // discard the polluted root from the summation at the top layer
        received_packets_tree[_layer-1][0] = fff.v2vSubtraction(received_packets_tree[_layer-1][0],received_packets_tree[0][largestARindex]);
        sum_result_ar_alg = macVerifier(received_packets_tree[_layer-1][0],_assignedKeyset) && signVerifier(received_packets_tree[_layer-1][0],_publicKey);
-       ARvector[largestARindex]++;
-       path_index_vector.push_back(largestARindex);   
+       //ARvector[largestARindex]++;
+       //path_index_vector.push_back(largestARindex);   
        ar_tree_verification_counter++;
        polluted_packet_counter++;
       };
@@ -618,6 +622,35 @@ int hpacket::simpleVerifier(std::vector<std::vector<uint8_t>> received_packets_l
  return verification_counter;
 };
 
+std::vector<int> hpacket::simpleVerifierNEW(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey){
+ // h_appendedSymbol = received_packets_list;
+  std::vector<int> simple_verifier_output={0,0};
+  int verification_counter=0;
+  int no_of_polluted_packets=0;
+  std::vector<bool> simpleVerifierResult(received_packets_list.size(),true);
+  for(int i=0; i<received_packets_list.size(); i++){
+     bool test =false;
+     bool mac_ver_result = macVerifier(received_packets_list[i],_assignedKeyset);
+        //  std::cout << "here";
+     bool sign_ver_result = signVerifier(received_packets_list[i],_publicKey);
+              // std::cout << "here";
+     if(mac_ver_result==true && sign_ver_result==true){
+     test = true;
+     };
+     if((mac_ver_result==false) || (sign_ver_result==false)){
+     no_of_polluted_packets++;
+     };
+     //simpleVerifierResult[i] = macVerifier(h_appendedSymbol[i]) && signVerifier(h_appendedSymbol[i]);
+    simpleVerifierResult[i]=test;
+          //  std::cout << "here";
+     verification_counter++;
+  };
+  
+   //     std::cout << "here";
+   simple_verifier_output[0]= verification_counter;
+   simple_verifier_output[1]= no_of_polluted_packets;
+ return simple_verifier_output;
+};
 
 
 void hpacket::packetCombiner()

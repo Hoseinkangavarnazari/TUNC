@@ -125,19 +125,19 @@ CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/keygenerator.cpp -o CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.s
 
-CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: CMakeFiles/runner.out.dir/flags.make
-CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: ../headers/src/mac_calculator.cpp
-CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp
+CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o: CMakeFiles/runner.out.dir/flags.make
+CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o: ../headers/src/networktopology.cpp
+CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o: CMakeFiles/runner.out.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akif/Documents/TUNC/TUNC/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o -MF CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o.d -o CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/networktopology.cpp
 
-CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp > CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.i
+CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akif/Documents/TUNC/TUNC/headers/src/networktopology.cpp > CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.i
 
-CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.s
+CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akif/Documents/TUNC/TUNC/headers/src/networktopology.cpp -o CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.s
 
 CMakeFiles/runner.out.dir/headers/src/node.cpp.o: CMakeFiles/runner.out.dir/flags.make
 CMakeFiles/runner.out.dir/headers/src/node.cpp.o: ../headers/src/node.cpp
@@ -243,7 +243,7 @@ runner_out_OBJECTS = \
 "CMakeFiles/runner.out.dir/headers/src/ff.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o" \
-"CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o" \
+"CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/node.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/packet.cpp.o" \
 "CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o" \
@@ -259,7 +259,7 @@ runner.out: CMakeFiles/runner.out.dir/headers/src/cFunctions.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/ff.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/hpacket.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/keygenerator.cpp.o
-runner.out: CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o
+runner.out: CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/node.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/packet.cpp.o
 runner.out: CMakeFiles/runner.out.dir/headers/src/rlnc_decoder.cpp.o
