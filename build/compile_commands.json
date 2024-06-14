@@ -21,8 +21,8 @@
 },
 {
   "directory": "/home/akif/Documents/TUNC/TUNC/build",
-  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/mac_calculator.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp",
-  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/mac_calculator.cpp"
+  "command": "/usr/bin/g++   -g -o CMakeFiles/runner.out.dir/headers/src/networktopology.cpp.o -c /home/akif/Documents/TUNC/TUNC/headers/src/networktopology.cpp",
+  "file": "/home/akif/Documents/TUNC/TUNC/headers/src/networktopology.cpp"
 },
 {
   "directory": "/home/akif/Documents/TUNC/TUNC/build",
