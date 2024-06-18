@@ -77,7 +77,7 @@ public:
     void signCalculator();
     uint8_t signCalculatorONEPACKET(std::vector<uint8_t> _current_packet_MACs, std::vector<uint8_t> _private_key);
     //bool Verifier();
-    bool macVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<std::vector<uint8_t>> _assignedKeyset);
+    bool macVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool);
     bool signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<uint8_t> _publicKey);
     void packetCombiner();
     std::vector<std::vector<uint8_t>> packetAppender(std::vector<std::vector<uint8_t>> _h_appendedSymbol);
@@ -87,12 +87,12 @@ public:
     std::vector<std::vector<uint8_t>> pollutionGeneration(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<int> pollutedPacketIndex);
     std::vector<uint8_t> pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet, int a);
    // std::vector<uint8_t> intelligentpollutionGeneration(std::vector<uint8_t> _packet,std::vector<std::vector<uint8_t>> assignedKeys);
-    int treeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey); 
-    std::vector<int> treeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey);
-    int arTreeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,std::vector<int> ARvector,int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey); 
-    std::vector<int> arTreeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> ARvector, int _layer, std::vector<std::vector<uint8_t>> _assignedKeyset, std::vector<uint8_t> _publicKey); 
-    int simpleVerifier(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey);
-    std::vector<int> simpleVerifierNEW(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<uint8_t> _publicKey);
+    int treeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey); 
+    std::vector<int> treeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey);
+    int arTreeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,std::vector<int> ARvector,int _layer,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey); 
+    std::vector<int> arTreeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree, std::vector<int> ARvector, int _layer, std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool, std::vector<uint8_t> _publicKey); 
+    int simpleVerifier(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey);
+    std::vector<int> simpleVerifierNEW(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey);
     std::vector<uint8_t> randomCombiner(std::vector<uint8_t> _vec1,std::vector<uint8_t> _vec2);
     std::vector<uint8_t> randomMultiplier(uint8_t a,std::vector<uint8_t> _vec);
     std::vector<uint8_t> packetAppenderONEPACKET(std::vector<uint8_t> _h_appendedSymbol, std::vector<uint8_t> _macVector, uint8_t _sign );
