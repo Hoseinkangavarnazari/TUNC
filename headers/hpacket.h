@@ -85,6 +85,10 @@ public:
     void multiplyCheck();
     std::vector<std::vector<std::vector<uint8_t>>>  treeGenerator(std::vector<std::vector<uint8_t>> received_packets_list, int _numberOfLayers,int leaves, int _packetSize);
     std::vector<std::vector<uint8_t>> pollutionGeneration(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<int> pollutedPacketIndex);
+    std::vector<uint8_t> intelligentPollutionGeneration(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet);
+
+    std::vector<uint8_t> gf256_gaussian_elimination(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet);
+    
     std::vector<uint8_t> pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet, int a);
    // std::vector<uint8_t> intelligentpollutionGeneration(std::vector<uint8_t> _packet,std::vector<std::vector<uint8_t>> assignedKeys);
     int treeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey); 

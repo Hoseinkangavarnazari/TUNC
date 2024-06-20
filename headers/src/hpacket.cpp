@@ -341,6 +341,86 @@ for(int i=0; i<_pollutedPacketIndex.size(); i++){
     return received_packets_list;
 };
 
+/////////--------------------------------   HOSEIN CLEVER POLLUTION STARTS HERE   ----------------------------------------------------------- ///////
+
+// Perform Gaussian elimination in GF(256)
+std::vector<uint8_t> hpacket::gf256_gaussian_elimination(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet) {
+
+std::vector<std::vector<uint8_t>> A(_assignedKeySet.size(),std::vector<uint8_t>(_assignedKeySet[0].size()-1));
+std::vector<uint8_t> b(_assignedKeySet.size(),0);
+
+for(int i=0; i<_assignedKeySet.size(); i++)
+{  
+  std::vector<uint8_t> C(_assignedKeySet[i].begin(), _assignedKeySet[i].end()-1);
+  A[i]=C;
+  b[i]= fff.mutiply(received_packet[_assignedKeySet.size()-1+i], _assignedKeySet[i][_assignedKeySet[i].size()-1]);
+};
+
+    int n = A.size();
+    for (int i = 0; i < n; ++i) {
+        // Find pivot row and swap
+        int maxRow = i;
+        for (int k = i + 1; k < n; ++k) {
+            if (std::abs(A[k][i]) > std::abs(A[maxRow][i])) {
+                maxRow = k;
+            }
+        }
+        std::swap(A[maxRow], A[i]);
+        std::swap(b[maxRow], b[i]);
+        std::cout << "here";
+
+        // Make all rows below this one 0 in current column
+        for (int k = i + 1; k < n; ++k) {
+            uint8_t factor = fff.division(A[k][i], A[i][i]);
+            b[k] = fff.subtraction(b[k], fff.mutiply(factor, b[i]));
+            for (int j = i; j < n; ++j) {
+                A[k][j] = fff.subtraction(A[k][j], fff.mutiply(factor, A[i][j]));
+            }
+        }
+    }
+        std::cout << "here";
+
+    // Solve for x using back substitution
+    std::vector<uint8_t> x(_assignedKeySet[0].size()-1);
+    for (int i = x.size() - 1; i >= 0; --i) {
+        int sum = 0;
+        for (int j = i + 1; j < x.size(); ++j) {
+            sum = fff.add(sum, fff.mutiply(A[i][j], x[j]));
+        }
+        x[i] = fff.division(fff.subtraction(b[i], sum), A[i][i]);
+    }
+
+    // Output the solution
+             std::cout << "here";
+
+    for (size_t i = 0; i < x.size(); ++i) {
+        received_packet[i]=x[i];
+    }
+    return received_packet;
+};
+
+
+
+
+std::vector<uint8_t> hpacket::intelligentPollutionGeneration(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet){
+
+std::vector<std::vector<uint8_t>> A(_assignedKeySet.size(),std::vector<uint8_t>(_assignedKeySet[0].size()-1));
+std::vector<uint8_t> B(_assignedKeySet.size(),0);
+
+for(int i=0; i<_assignedKeySet.size(); i++)
+{  
+  std::vector<uint8_t> C(_assignedKeySet[i].begin(), _assignedKeySet[i].end()-1);
+  A.push_back(C);
+  B[i]= fff.mutiply(received_packet[_assignedKeySet.size()-1+i], _assignedKeySet[i][_assignedKeySet[i].size()-1]);
+};
+
+
+         // std::cout << "here";
+    return received_packet;
+};
+
+/////////--------------------------------   HOSEIN CLEVER POLLUTION ENDS HERE   ----------------------------------------------------------- ///////
+
 std::vector<uint8_t> hpacket::pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet, int a){
    
    //////Randomly select the index of the packet for pollution////////////////
@@ -360,7 +440,7 @@ std::vector<uint8_t> hpacket::pollutionGenerationONEPACKET(std::vector<uint8_t> 
     return zeroVector;};
     //std::vector<uint8_t> hpacket:: intelligentpollutionGeneration(std::vector<uint8_t> _packet,std::vector<std::vector<uint8_t>> _assignedKeys){
       //std::vector<uint8_t> b;
-      //b[0]= fff.mutiply(_assignedKeys[0][2],_packet.back());
+      //b[0]= fff.mutiply(_assignedKeys[0][2],_packest.back());
       //b[1]= fff.mutiply(_assignedKeys[1][2],_packet.back());
      // _packet[0] = fff.add(fff.mutiply(_assignedKeys[1][1],b[0]),fff.mutiply(_assignedKeys[0][1],b[1]));
 

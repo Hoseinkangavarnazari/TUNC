@@ -586,9 +586,9 @@ int main()
   int _GG = 10; // number of generations
   int _G = 64; // generationsize
   int _fieldSize = 256;
-  int _packetSize = 6;
-  int _keypoolSize = 16;
-  int _keysetSize = 2;
+  int _packetSize = 5;
+  int _keypoolSize = 8;
+  int _keysetSize = 4;
   int Number_of_Pollution = 1;
   int _bufferSize = _G;
 
@@ -833,7 +833,10 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
           if (randomValue <= _topology[path_list[pathIndex][j]].attackProbability)
           {
 
-            _topology[path_list[pathIndex][j]].output = p1.pollutionGenerationONEPACKET(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].pollutedDropped);
+            //_topology[path_list[pathIndex][j]].output = p1.pollutionGenerationONEPACKET(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].pollutedDropped);
+            
+            _topology[path_list[pathIndex][j]].output = p1.gf256_gaussian_elimination(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].keySet);
+
             _topology[path_list[pathIndex][j]].pollutedDropped++;
           //  std::cout << "here";
             ARvector[pathIndex]++;
