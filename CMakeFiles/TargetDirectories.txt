@@ -1,3 +1,0 @@
-/home/akif/Documents/TUNC/TUNC/CMakeFiles/runner.out.dir
-/home/akif/Documents/TUNC/TUNC/CMakeFiles/edit_cache.dir
-/home/akif/Documents/TUNC/TUNC/CMakeFiles/rebuild_cache.dir
