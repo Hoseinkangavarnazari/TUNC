@@ -5,17 +5,21 @@
 // #include "../keygenerator.h"
 #include <vector>
 #include "../ff.h"
+#include "../pff.h"
 #include <cmath>
 #include <cstdlib> // Include the necessary header for rand() and srand()
 #include <ctime>   // Include the necessary header for time()
 // #include "../mac_calculator.h"
 // #include "../sign_calculator.h"
 #include <numeric>
+#include <cassert>
 
 
-ff fff(256);
+   // ff fff(256);
+    pff fff(127);
 
-uint8_t hpacket::powerCalculator(uint8_t k , uint8_t n)
+
+uint8_t hpacket::powerCalculator(uint8_t k ,uint8_t n)
 {
   uint8_t powerResult=1;
   if (n>0)
@@ -60,7 +64,9 @@ for(int pcktIndex=0; pcktIndex<h_codedSymbol.size(); pcktIndex++){
     {
       uint8_t MAC_mult_sum = fff.mutiply(publickeyset[i][j], h_codedSymbol[pcktIndex][j]);
 
-      currentMAC = currentMAC^MAC_mult_sum;
+   //   currentMAC = currentMAC^MAC_mult_sum;
+        currentMAC = fff.add(currentMAC,MAC_mult_sum);
+
 
     };
     // add negative sign
@@ -98,7 +104,9 @@ std::vector<uint8_t> hpacket::macCalculatorONEPACKET(std::vector<uint8_t> _curre
     {
       uint8_t MAC_mult_sum = fff.mutiply(_keypool[i][j], _current_packet[j]);
 
-      currentMAC = currentMAC^MAC_mult_sum;
+     // currentMAC = currentMAC^MAC_mult_sum;
+      currentMAC = fff.add(currentMAC,MAC_mult_sum);
+
 
     };
     // add negative sign
@@ -147,7 +155,9 @@ uint8_t sign_sum=0;
   {
     uint8_t sign_multiply = fff.mutiply(_private_key[t], _current_packet_MACs[t]);
    // this->c_sign.push_back(sign_multiply);
-    sign_sum = sign_sum ^ sign_multiply;
+    //sign_sum = sign_sum ^ sign_multiply;
+    sign_sum = fff.add(sign_sum , sign_multiply);
+
   };
   // add negative sign
   int currentsign = fff.mutiply(fff.additionInverse(1), sign_sum);
@@ -221,8 +231,11 @@ bool hpacket::macVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<st
     
     for (int j = 0; j <  _assignedKeyset[0].size()-1; j++)
     {
-
-      currentMAC_ver = currentMAC_ver ^ fff.mutiply(_assignedKeyset[i][j], verifiedDataPacket[j]); // working
+      uint8_t current_multiplication = 0;      uint8_t current_addition = 0;
+     current_multiplication = fff.mutiply(_assignedKeyset[i][j], verifiedDataPacket[j]);
+     current_addition= currentMAC_ver;
+     // currentMAC_ver = currentMAC_ver ^ fff.mutiply(_assignedKeyset[i][j], verifiedDataPacket[j]); // working
+       currentMAC_ver = fff.add(current_multiplication, current_addition);
        //   std::cout << "here";
 
     };
@@ -273,11 +286,19 @@ bool hpacket::signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<u
   {
     uint8_t akif_verifier = fff.mutiply(_publicKey[j], verifiedDataPacket[verifiedDataPacket.size()-number_of_mac-1+j]);
     this->c_sign_result1.push_back(akif_verifier);
-    mac_verifier_sum = mac_verifier_sum ^ akif_verifier;
+   // mac_verifier_sum = mac_verifier_sum ^ akif_verifier;
+    
+    mac_verifier_sum = fff.add(mac_verifier_sum , akif_verifier);
+
   };
   //  First, multiply privatekey with received mac and put result in sign result vector
   c_sign_result2 = fff.mutiply(_publicKey[number_of_mac], verifiedDataPacket[verifiedDataPacket.size()-1]);
-  sign_result = c_sign_result2 ^ mac_verifier_sum;
+//  sign_result = c_sign_result2 ^ mac_verifier_sum;
+
+    sign_result = fff.add(c_sign_result2 , mac_verifier_sum);
+
+   // sign_result = fff.add(c_sign_result2 , mac_verifier_sum);
+
   // std::cout << "here";
 
   bool sign_resultsFlag = true;
@@ -305,9 +326,9 @@ bool hpacket::signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<u
 
 
 ////////////
-uint8_t treePowerCalculator(uint8_t k , uint8_t n)
+int treePowerCalculator(uint8_t k , uint8_t n)
 {
-  uint8_t powerResult=1;
+  int powerResult=1;
   if (n>0)
     {
   for(int j=0; j<n ; j++)
@@ -398,11 +419,11 @@ for(int i=0; i<_assignedKeySet.size(); i++)
     }
     return received_packet;
 };
-
-
-
+// TO DO : @HOSEIN PARTS
+// NEEDED functions fff.
 
 std::vector<uint8_t> hpacket::intelligentPollutionGeneration(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet){
+
 
 std::vector<std::vector<uint8_t>> A(_assignedKeySet.size(),std::vector<uint8_t>(_assignedKeySet[0].size()-1));
 std::vector<uint8_t> B(_assignedKeySet.size(),0);
@@ -415,9 +436,122 @@ for(int i=0; i<_assignedKeySet.size(); i++)
 };
 
 
+
          // std::cout << "here";
     return received_packet;
 };
+
+std::vector<uint8_t> hpacket::rref(std::vector<std::vector<uint8_t>> _coeffMatrix, std::vector<std::vector<uint8_t>> KeyPool, std::vector<uint8_t> dataMatrix)
+{
+std::vector<uint8_t> dataVector(_coeffMatrix.size(),0);
+
+
+std::vector<std::vector<uint8_t>> coeffMatrix(_coeffMatrix.size(),std::vector<uint8_t>(_coeffMatrix[0].size()-1,0));
+
+for(int i=0;  i<_coeffMatrix.size(); i++){
+  for(int j=0; j<(_coeffMatrix[0].size()-1); j++){
+     coeffMatrix[i][j]= _coeffMatrix[i][j];
+  }
+}
+
+// take the correct tags from the data vector for given keyset
+   for(int ind=0; ind<_coeffMatrix.size(); ind++){
+    for(int  j=0; j<KeyPool.size(); j++ ){
+      if(_coeffMatrix[ind]==KeyPool[j]){
+        dataVector[ind]= fff.additionInverse(fff.mutiply( dataMatrix[_coeffMatrix[0].size()-1+j], _coeffMatrix[ind][_coeffMatrix[ind].size()-1]));
+      }
+    }
+
+   }
+
+    // only row
+    // The number of rows in the coefficient matrix should be equal to the number of rows in the data matrix
+    assert(coeffMatrix.size() == dataVector.size());
+    //  the column size of the coefficint matrix should be euqal to generation size 
+    // since each coeff element multiplied by one uncoded packets 
+
+    // on the other hand the size of the data matrix should be equal to the symbol size
+    // and each row are the coded symbols however, for rref it should not matter at all and should only work
+    // with the coeff matrix
+
+   // printMatrix(coeffMatrix);
+
+    // dataMatrix;
+  //  ff ff(256);
+
+    // Perform row reduction on coeffMatrix
+    for (int i = 0; i < coeffMatrix.size(); i++)
+    {
+        // Find the pivot element
+        int pivotRow = i;
+        // while the pivot element is 0 keep searching at different rows
+        while (pivotRow < coeffMatrix.size() && coeffMatrix[pivotRow][i] == 0)
+        {
+            pivotRow++;
+        }
+        // when you found a row with a non-zero pivot element go out but if
+        // you reach the end of the matrix then break
+        // which means pivotRow == coeffMatrix.size()
+        if (pivotRow == coeffMatrix.size())
+        {
+            // No pivot element found, matrix is already in row echelon form
+            break;
+        }
+
+        // Swap rows to bring pivot element to the current row
+        // do the same with dataMatrix Later
+        std::swap(coeffMatrix[i], coeffMatrix[pivotRow]);
+        std::swap(dataVector[i], dataVector[pivotRow]);
+
+        uint8_t pivotElement = coeffMatrix[i][i];
+
+        // Scale the pivot row to make the pivot element 1
+        for (int j = i; j < coeffMatrix[i].size(); j++)
+        {
+           // coeffMatrix[i][j] = fff.division(coeffMatrix[i][j], pivotElement);
+
+            coeffMatrix[i][j] = fff.mutiply(coeffMatrix[i][j],fff.mutiplicationInverse(pivotElement));
+
+        }
+
+        // since their size might not be the same, we need separate for loops
+       // for (int j = 0; j < dataMatrix[i].size(); j++)
+        //{
+        //    dataVector[i] = fff.division(dataVector[i], pivotElement);
+
+            dataVector[i] = fff.mutiply(dataVector[i], fff.mutiplicationInverse(pivotElement));
+
+        //}
+
+
+        for (int j = 0; j < coeffMatrix.size(); j++)
+        {
+            if (j != i && coeffMatrix[j][i] != 0)
+            {
+                uint8_t factor = coeffMatrix[j][i];
+                for (int k = i; k < coeffMatrix[j].size(); k++)
+                {
+                    coeffMatrix[j][k] = fff.subtraction(coeffMatrix[j][k], fff.mutiply(factor, coeffMatrix[i][k]));
+                }
+             //   for (int k = 0; k < dataMatrix[j].size(); k++)
+               // {
+                    dataVector[j] = fff.subtraction(dataVector[j], fff.mutiply(factor, dataVector[i]));
+                //}
+            }
+        }
+        for(int i=0; i<dataVector.size(); i++){
+           dataMatrix[i]=dataVector[i];
+
+        }
+        for(int k=dataVector.size(); k<coeffMatrix[0].size() ; k++){
+          dataMatrix[k]=0;
+        }
+         //printMatrix(coeffMatrix);
+         //printMatrix(dataMatrix);
+
+    }
+    return dataMatrix;
+}
 
 /////////--------------------------------   HOSEIN CLEVER POLLUTION ENDS HERE   ----------------------------------------------------------- ///////
 
@@ -654,13 +788,14 @@ int hpacket::treeVerifier(std::vector<std::vector<std::vector<uint8_t>>> receive
     };
 
 std::vector<int> hpacket::treeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey){
-            
+       //     std::cout << "here";
             std::vector<int> treeVerifierNEW_output = {0,0};
             int tree_verification_counter=1;
             int polluted_packet_counter=0;
     //std::vector<uint8_t> zeroVector(number_of_mac, 0);
   //    std::cout << "here";
-    std::vector<std::vector<bool>> result_vector(_layer, std::vector<bool>(treePowerCalculator(_leaves,_layer-1) , true));
+  int k  = treePowerCalculator(_leaves,_layer-1);
+    std::vector<std::vector<bool>> result_vector(_layer, std::vector<bool>(k , true));
     
           
     result_vector[0][0] = macVerifier(received_packets_tree[_layer-1][0],_assignedKeyset, _keypool) && signVerifier(received_packets_tree[_layer-1][0],_publicKey);
@@ -766,6 +901,7 @@ std::vector<int> hpacket::simpleVerifierNEW(std::vector<std::vector<uint8_t>> re
 
 
 void hpacket::packetCombiner()
+
 {
 combination_counter=0;
 for (int i = 0; i < verified_symbols.size(); i++)
@@ -775,6 +911,28 @@ h_combinedSymbol = fff.v2vAddition(h_combinedSymbol,fff.s2vMultiplication(verifi
 combination_counter++;
 };
 };
+
+
+     ///////////////// FP Sum Checker //////////////////////////////////
+bool hpacket::fp_checker(int _packetSize, int _fieldSize, int k,std::vector<std::vector<uint8_t>> test_packets){
+  bool fp_result=false;
+std::vector<uint8_t> zeroVector(_packetSize,0);
+std::vector<uint8_t> vector_sum(_packetSize,0);
+
+for(int i=0; i<k; i++){
+   vector_sum = fff.v2vAddition(test_packets[i], vector_sum);
+   };
+
+if(vector_sum==zeroVector){
+  fp_result= true;
+};
+  
+return fp_result;
+};
+
+
+
+
 
 // Second, sum sign_result with
 // sign_result = ff.add(sign_result, _privateKey.back());1

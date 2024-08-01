@@ -4,6 +4,7 @@
 #define HPACKET_H
 #include "packet.h"
 #include "ff.h"
+#include "pff.h"
 #include "keygenerator.h"
 //#include "networktopology.h"
 #include "sign_calculator.h"
@@ -81,15 +82,17 @@ public:
     bool signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<uint8_t> _publicKey);
     void packetCombiner();
     std::vector<std::vector<uint8_t>> packetAppender(std::vector<std::vector<uint8_t>> _h_appendedSymbol);
+    
     uint8_t powerCalculator(uint8_t k ,uint8_t n);
     void multiplyCheck();
     std::vector<std::vector<std::vector<uint8_t>>>  treeGenerator(std::vector<std::vector<uint8_t>> received_packets_list, int _numberOfLayers,int leaves, int _packetSize);
     std::vector<std::vector<uint8_t>> pollutionGeneration(std::vector<std::vector<uint8_t>> received_packets_list,std::vector<int> pollutedPacketIndex);
     std::vector<uint8_t> intelligentPollutionGeneration(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet);
-
+    bool fp_checker(int _fieldSize,  int _pacSize, int k);
     std::vector<uint8_t> gf256_gaussian_elimination(std::vector<uint8_t> received_packet, std::vector<std::vector<uint8_t>> _assignedKeySet);
-    
+    std::vector<uint8_t> generateRandomVector(int size, int _fieldsize);
     std::vector<uint8_t> pollutionGenerationONEPACKET(std::vector<uint8_t> _received_packet, int a);
+    std::vector<uint8_t> rref(std::vector<std::vector<uint8_t>> coeffMatrix, std::vector<std::vector<uint8_t>> KeyPool,  std::vector<uint8_t> dataMatrix);
    // std::vector<uint8_t> intelligentpollutionGeneration(std::vector<uint8_t> _packet,std::vector<std::vector<uint8_t>> assignedKeys);
     int treeVerifier(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey); 
     std::vector<int> treeVerifierNEW(std::vector<std::vector<std::vector<uint8_t>>> received_packets_tree,int _layer,int _leaves,std::vector<std::vector<uint8_t>> _assignedKeyset,std::vector<std::vector<uint8_t>> _keypool,std::vector<uint8_t> _publicKey);
@@ -100,7 +103,7 @@ public:
     std::vector<uint8_t> randomCombiner(std::vector<uint8_t> _vec1,std::vector<uint8_t> _vec2);
     std::vector<uint8_t> randomMultiplier(uint8_t a,std::vector<uint8_t> _vec);
     std::vector<uint8_t> packetAppenderONEPACKET(std::vector<uint8_t> _h_appendedSymbol, std::vector<uint8_t> _macVector, uint8_t _sign );
-   
+    bool fp_checker(int _packetSize, int _fieldSize, int k,std::vector<std::vector<uint8_t>> test_packets);
 
     //};
 private:

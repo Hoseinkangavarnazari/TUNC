@@ -5,6 +5,7 @@
 #include <random>
 #include "headers/rlnc_encoder.h"
 #include "headers/ff.h"
+#include "headers/pff.h"
 #include "headers/cFunctions.h"
 #include "headers/packet.h"
 #include "headers/rlnc_decoder.h"
@@ -19,21 +20,36 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/property_map/property_map.hpp>
 
-std::vector<uint8_t> generateRandomVector(int size)
+//  ff fff(256);
+  // pff fff(127);
+
+std::vector<uint8_t> generateRandomVector(int size, int _fieldsize)
+
 {
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint8_t> dis(0, 255);
+    std::vector<uint8_t> randomVector(size);
 
-  std::vector<uint8_t> randomVector(size);
-
+  if(_fieldsize == 256){
+  std::uniform_int_distribution<uint8_t> dis(1, _fieldsize-1);
   for (int i = 0; i < size; ++i)
   {
     randomVector[i] = dis(gen);
   }
+  }
+  else{
+     
+   std::uniform_int_distribution<uint8_t> dis(1,_fieldsize-1);
+  for (int i = 0; i < size; ++i)
+  {
+    randomVector[i] = dis(gen);
+  };
+  };
 
   return randomVector;
 };
+
+
 ///////////////// Generate random AR vector //////////////////////////////////
 std::vector<int> generateRandomARvector(int ARsize)
 {
@@ -164,16 +180,16 @@ std::vector<uint8_t> generateChannelVector(int generationsize)
   std::mt19937 generator(std::random_device{}());
 
 //----------------------------------------- Key Distribution Center------------------------------------------------------//
-std::vector<std::vector<uint8_t>> keyDistributor(int _KeysetSize, std::vector<std::vector<uint8_t>> KeyPool)
+std::vector<int> chosenNumbers(int _KeysetSize, int _keypoolSize)
 {
  // std::cout << "here";
 
   std::vector<int> chosenSet;
-  std::vector<std::vector<uint8_t>> assignedKeyset(_KeysetSize, std::vector<uint8_t>(KeyPool[0].size(),0));
+ 
   
   std::vector<int> chosenNumbers(_KeysetSize, 0);
   // Create a discrete distribution based on the probabilities
-  std::uniform_int_distribution<int> distribution(0, KeyPool.size() - 1);
+  std::uniform_int_distribution<int> distribution(0, _keypoolSize - 1);
   // Sample an index based on probabilities
   std::set<int> uniqueValues;
 
@@ -188,14 +204,58 @@ std::vector<std::vector<uint8_t>> keyDistributor(int _KeysetSize, std::vector<st
 
     chosenNumbers[i] = generatedValue;
   };
-  for (int i = 0; i < _KeysetSize; i++)
+  
+  return chosenNumbers;
+};
+//
+std::vector<std::vector<uint8_t>> keyDistributor( std::vector<std::vector<uint8_t>> KeyPool, std::vector<int> keyIndexes)
+{
+ // std::cout << "here";
+
+  std::vector<std::vector<uint8_t>> assignedKeyset(keyIndexes.size(), std::vector<uint8_t>(KeyPool[0].size(),0));
+  
+//  std::vector<int> chosenNumbers(keyIndexes.size(), 0);
+  // Create a discrete distribution based on the probabilities
+  
+  for (int i = 0; i < keyIndexes.size(); i++)
   {
 
-    assignedKeyset[i] = KeyPool[chosenNumbers[i]];
+    assignedKeyset[i] = KeyPool[keyIndexes[i]];
   };
   return assignedKeyset;
 };
+//--------------------------ORIGINAL KDC---------------------------------------//
+// std::vector<std::vector<uint8_t>> keyDistributor(int _KeysetSize, std::vector<std::vector<uint8_t>> KeyPool)
+// {
+//  // std::cout << "here";
 
+//   std::vector<int> chosenSet;
+//   std::vector<std::vector<uint8_t>> assignedKeyset(_KeysetSize, std::vector<uint8_t>(KeyPool[0].size(),0));
+  
+//   std::vector<int> chosenNumbers(_KeysetSize, 0);
+//   // Create a discrete distribution based on the probabilities
+//   std::uniform_int_distribution<int> distribution(0, KeyPool.size() - 1);
+//   // Sample an index based on probabilities
+//   std::set<int> uniqueValues;
+
+//   for (int i = 0; i < _KeysetSize; i++)
+//   {
+//     int generatedValue = 0;
+
+//     do
+//     {
+//       generatedValue = distribution(generator);
+//     } while (!uniqueValues.insert(generatedValue).second); // Continue generating if the value is not unique
+
+//     chosenNumbers[i] = generatedValue;
+//   };
+//   for (int i = 0; i < _KeysetSize; i++)
+//   {
+
+//     assignedKeyset[i] = KeyPool[chosenNumbers[i]];
+//   };
+//   return assignedKeyset;
+// };
 //------------------------------------------------------------------------------------------------------------------------//
 // int mainOLD()           ///////////MAIN START/////////////////
 // {
@@ -524,15 +584,18 @@ struct VertexProperties
   std::vector<std::vector<uint8_t>> nonSourceNodeRLNC;
   std::vector<std::vector<uint8_t>> SourceNodeOutput;
   std::string type = "";
-  double attackProbability = 0.05;
+  double attackProbability ;
   std::vector<uint8_t> output;
   std::vector<uint8_t> input;
   std::vector<int> arVectorForPackets;
   std::vector<int> path_index_vector;
+  std::vector<int> key_index_vector;
+  std::vector<int> sorted_key_index_vector;
+
 };
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> Graph;
 
-void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descriptor>> path_list, int _GG, int _G, int _fieldSize, int _packetSize, int _keypoolSize, int _keysetSize, int Number_of_Pollution, int _bufferSize);
+void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descriptor>> path_list, int _GG, int _G, int _fieldSize, int _packetSize, int _keypoolSize, int _keysetSize, int Number_of_Pollution, int _bufferSize,double attackProbability);
 // ........................................................
 int main()
 {
@@ -546,15 +609,17 @@ int main()
   auto v3 = boost::add_vertex(VertexProperties{}, g); // Initialize properties for Intermediate_2 Node
   auto v4 = boost::add_vertex(VertexProperties{}, g); // Initialize properties for Destination Node
 
-  // Create a connection between Nodes
+  // Create a connetion between Nodes
   boost::add_edge(v0, v1, g); // From Source to Intermediate_1
   boost::add_edge(v0, v3, g); // From Source to Intermediate_2
   boost::add_edge(v0, v2, g); // From Source to Adversary
   boost::add_edge(v1, v2, g); // From Intermediate_1 to Adversary
-  boost::add_edge(v2, v3, g); // From Adversary to Intermediate
+  boost::add_edge(v3, v2, g); // From Adversary to Intermediate
   boost::add_edge(v1, v3, g); // From Intermediate_1 to Intermediate_2
   boost::add_edge(v3, v4, g); // From  Intermediate_2 to Destination
   boost::add_edge(v1, v4, g); // From  Intermediate_1 to Destination
+  boost::add_edge(v2, v4, g); // From  Adversary to Destination
+
 
   // Define paths
   std::vector<Graph::vertex_descriptor> path_1 = {v0, v1, v4};
@@ -583,14 +648,14 @@ int main()
   path_list.push_back(path_8);
 
   // set the main simulation parameters
-  int _GG = 10; // number of generations
-  int _G = 64; // generationsize
-  int _fieldSize = 256;
-  int _packetSize = 5;
-  int _keypoolSize = 8;
+  int _GG = 100000; // number of generations
+
+  int _fieldSize = 127;
+  int _packetSize = 50;
+  int _keypoolSize = 42;
   int _keysetSize = 4;
   int Number_of_Pollution = 1;
-  int _bufferSize = _G;
+  
 
   // Access and manipulate vertex properties
   // Source Node
@@ -622,14 +687,21 @@ int main()
   g[v4].type = "Destination";
   g[v4].totalNodeSend = 0;
   g[v4].checkNumber = 0;
+  //int _G = 64; // generationsize
+  int min_G=8;int max_G=128;double min_att_rate =0.4;double max_att_rate =0.405;
+  for(double attackProbability= min_att_rate ; attackProbability<max_att_rate; attackProbability){
+  for(int _G=min_G ; _G<(max_G+1) ; _G){
+int _bufferSize = _G;
   g[v4].path_index_vector = std::vector<int>(_bufferSize,0);
   g[v4].arVectorForPackets = std::vector<int>(_bufferSize,0);
-
-
-  simulation(g, path_list, _GG, _G, _fieldSize, _packetSize, _keypoolSize, _keysetSize, Number_of_Pollution, _bufferSize);
+  simulation(g, path_list, _GG, _G, _fieldSize, _packetSize, _keypoolSize, _keysetSize, Number_of_Pollution, _bufferSize, attackProbability); // 
+    _G += _G ;
+  }
+  attackProbability += 0.2;
+  }
 }
 
-void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descriptor>> path_list, int _GG, int _G, int _fieldSize, int _packetSize, int _keypoolSize, int _keysetSize, int Number_of_Pollution, int _bufferSize)
+void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descriptor>> path_list, int _GG, int _G, int _fieldSize, int _packetSize, int _keypoolSize, int _keysetSize, int Number_of_Pollution, int _bufferSize,double attackProbability)
 {
   // Get the number of nodes in the graph
   std::size_t numVertices = boost::num_vertices(_topology);
@@ -651,13 +723,69 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
 
   std::vector<int> ARvector(std::vector<int>(8, 1)); // Size of AR vector will be updated
 
-  std::vector<std::vector<int>> result_vector_treeVerifier(_GG,std::vector<int>(2, 0)); // Size of AR vector will be updated
+  std::vector<std::vector<int>> result_vector_treeVerifier(_GG,std::vector<int>(2, 0)); 
 
-  std::vector<std::vector<int>> result_vector_arVerifier(_GG,std::vector<int>(2, 0)); // Size of AR vector will be updated
+  std::vector<std::vector<int>> result_vector_arVerifier(_GG,std::vector<int>(2, 0)); 
 
-  std::vector<std::vector<int>> result_vector_simpleVerifier(_GG,std::vector<int>(2, 0)); // Size of AR vector will be updated
+  std::vector<std::vector<int>> result_vector_simpleVerifier(_GG,std::vector<int>(2, 0)); 
 
+  std::vector<double> polluted_packets(_GG, 0); 
 
+  std::vector<std::vector<int>> key_difference_matrice(_GG,std::vector<int>(_keysetSize+1, 0));
+
+ 
+
+  std::string filename = "./Results/BufferSize" + std::to_string(256) + "-" + std::to_string(512);
+  filename += "Field Size" + std::to_string(_fieldSize);
+  filename += "Generation Number" + std::to_string(_GG);
+  filename += "MAC Size" + std::to_string(_keypoolSize);
+  filename += "Keyset Size" + std::to_string(_keysetSize);
+  filename += "PacketSize:" + std::to_string(_packetSize);
+  filename += ".txt";
+
+  std::ofstream outputFile(filename, std::ios::app);
+/////////////////-----------------------------------------------------------------------------------------------------//////////
+  std::string filename_key_dist = "./Results/BufferSize" + std::to_string(256) + "-" + std::to_string(512);
+  filename_key_dist += "MAC Size" + std::to_string(_keypoolSize);
+  filename_key_dist += "Generation Number" + std::to_string(_GG);
+  filename_key_dist += "Keyset Size" + std::to_string(_keysetSize);
+  filename_key_dist += ".txt";
+
+  std::ofstream outputFile_key_dist(filename_key_dist, std::ios::app);
+
+/////////////////-----------------------------------------------------------------------------------------------------------/////////////////////////////////////////////////////
+  // std::string filename_all_data_simple = "./Results/BufferSize" + std::to_string(8) + "-" + std::to_string(128);
+  // filename_all_data_simple += "Simple Verifier";
+  // filename_all_data_simple += "Field Size" + std::to_string(_fieldSize);
+  // filename_all_data_simple += "Generation Number" + std::to_string(_GG);
+  // filename_all_data_simple += "MAC" + std::to_string(_keypoolSize);  
+  // filename_all_data_simple += "Keyset Size" + std::to_string(_keysetSize);
+  // filename_all_data_simple += "PacketSize:" + std::to_string(_packetSize);
+  // filename_all_data_simple += ".txt";
+
+  // std::ofstream outputFile_all_data_simple(filename_all_data_simple, std::ios::app);
+  /////////////////-----------------------------------------------------------------------------------------------------------/////////////////////////////////////////////////////
+  std::string filename_all_data_tree = "./Results/BufferSize" + std::to_string(256) + "-" + std::to_string(512);
+  filename_all_data_tree += "Tree Verifier";
+  filename_all_data_tree += "Field Size" + std::to_string(_fieldSize);
+  filename_all_data_tree += "Generation Number" + std::to_string(_GG);
+  filename_all_data_tree += "MAC" + std::to_string(_keypoolSize);
+  filename_all_data_tree += "Keyset Size" + std::to_string(_keysetSize);
+  filename_all_data_tree += "PacketSize:" + std::to_string(_packetSize);
+  filename_all_data_tree += ".txt";
+
+  std::ofstream outputFile_all_data_tree(filename_all_data_tree, std::ios::app);
+  /////////////////-----------------------------------------------------------------------------------------------------------/////////////////////////////////////////////////////
+  std::string filename_all_data_ar = "./Results/BufferSize" + std::to_string(256) + "-" + std::to_string(512);
+  filename_all_data_ar += "AR Verifier";
+  filename_all_data_ar += "Field Size" + std::to_string(_fieldSize);
+  filename_all_data_ar += "Generation Number" + std::to_string(_GG);
+  filename_all_data_ar += "MAC" + std::to_string(_keypoolSize);  
+  filename_all_data_ar += "Keyset Size" + std::to_string(_keysetSize);
+  filename_all_data_ar += "PacketSize:" + std::to_string(_packetSize);
+  filename_all_data_ar += ".txt";
+
+  std::ofstream outputFile_all_data_ar(filename_all_data_ar, std::ios::app);
 
   std::srand(std::chrono::high_resolution_clock::now().time_since_epoch().count());
   
@@ -675,16 +803,16 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
     };
     //   while (flag) // until the decoder is full
     // {
+    _topology[2].pollutedDropped=0;
 
     // -------------------------------------------------fake packet generation------------------------------------------------------------//
     std::vector<std::vector<uint8_t>> receivedPackets(_G, std::vector<uint8_t>(_packetSize, 0));
     // std::cout << "here";
-
-    std::vector<uint8_t> coefficientVector = generateRandomVector(_G);
+    std::vector<uint8_t> coefficientVector = generateRandomVector(_G, _fieldSize);
     // create an hpacket with the random data
     for (int j = 0; j < _G; j++)
     {
-      receivedPackets[j] = generateRandomVector(_packetSize);
+      receivedPackets[j] = generateRandomVector(_packetSize,_fieldSize);
     };
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     //----------------------------------------------------- key distribution -----------------------------------------------------------------------//
@@ -693,7 +821,7 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
     std::vector<std::vector<uint8_t>> key_pool(_keypoolSize, std::vector<uint8_t>(_packetSize + 1, 0));
     for (int i = 0; i < _keypoolSize; i++)
     {
-      std::vector<uint8_t> newKey = generateRandomVector(_packetSize + 1);
+      std::vector<uint8_t> newKey = generateRandomVector((_packetSize + 1), _fieldSize);
       key_pool[i] = newKey;
     };
 
@@ -702,9 +830,13 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
     for (int k = 0; k < number_of_nonsource_nodes; k++)
     {
       // // Distribute keys
-      _topology[k+1].keySet= keyDistributor(_keysetSize,key_pool);    // key distribution function willbe fixed
+      _topology[k+1].key_index_vector = chosenNumbers(_keysetSize,_keypoolSize);
+      _topology[k+1].keySet= keyDistributor(key_pool,_topology[k+1].key_index_vector);    
+      
       //_topology[k + 1].keySet = key_pool;
     };
+     _topology[4].key_index_vector = chosenNumbers(_keysetSize,_keypoolSize);
+     _topology[4].keySet = keyDistributor(key_pool,_topology[4].key_index_vector);
    
   
    
@@ -714,17 +846,28 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
 
     std::vector<std::vector<uint8_t>> MACs;
     std::vector<uint8_t> appended_packet;
-    int NumberOfLayers = 7;
+    int NumberOfLayers = std::log2(_G)+1;
     int Number_Of_Leaves = 2;
     //  std::cout << "here";
     int numVerticesInt = static_cast<int>(boost::num_vertices(_topology));
     std::vector<uint8_t> numOfIncomingPackets(std::vector<uint8_t>(numVerticesInt - 1, 0));
 
-    std::vector<uint8_t> private_key = generateRandomVector(_keypoolSize + 1);
+    std::vector<uint8_t> private_key = generateRandomVector((_keypoolSize + 1),_fieldSize);
     hpacket p1(receivedPackets, MACs, key_pool, private_key, _keypoolSize, coefficientVector);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(0.0, 1.0);
+  //   int fp_counter=0;
+  //   for(int it=0; it<10000000; it++){
+  //   std::vector<std::vector<uint8_t>> _test_packets(5,std::vector<uint8_t>(_packetSize,0));
+  //   for(int x=0; x<5; x++){
+  //      _test_packets[x]= generateRandomVector(_packetSize,_fieldSize);
+  //   };
+  //  bool sum_Result= p1.fp_checker(_packetSize,_fieldSize, 5, _test_packets);
+  //  if(sum_Result==true){
+  //   fp_counter++;
+  //  };
+  // };
 
     for (int i = 0; i < _G; i++)
     { // i is packet index in a generation
@@ -733,6 +876,33 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
       // Generate a random number between 0 and 4
       int pathIndex = 0;
       pathIndex = std::rand() % path_list.size(); // rand() % 5 will give a random number between 0 and 4
+
+      // do{
+      //   _topology[2].key_index_vector = chosenNumbers(_keysetSize,_keypoolSize);
+      //   _topology[2].keySet = keyDistributor(key_pool,_topology[2].key_index_vector);
+      //   std::sort(_topology[4].key_index_vector.begin(), _topology[4].key_index_vector.end());
+      //   std::sort(_topology[2].key_index_vector.begin(), _topology[2].key_index_vector.end());
+      // }      while( _topology[2].key_index_vector == _topology[4].key_index_vector);
+         int same_key_counter=0;
+         _topology[2].key_index_vector = chosenNumbers(_keysetSize,_keypoolSize);
+         _topology[2].keySet = keyDistributor(key_pool,_topology[2].key_index_vector);
+         std::sort(_topology[4].key_index_vector.begin(), _topology[4].key_index_vector.end());
+         std::sort(_topology[2].key_index_vector.begin(), _topology[2].key_index_vector.end());
+         for (int ii = 0; ii < _keysetSize; ii++)
+         {
+          for (int  jj = 0; jj < _keysetSize; jj++)
+          {
+
+          if (_topology[2].key_index_vector[ii] == _topology[4].key_index_vector[jj])
+          {
+            same_key_counter++;
+          }
+
+         }
+         }
+       key_difference_matrice[generationIndex][same_key_counter]++;
+         
+      // }      while( _topology[2].key_index_vector == _topology[4].key_index_vector);
 
 
       //std::cout << "here";
@@ -746,8 +916,8 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
           _topology[path_list[pathIndex][j]].input = receivedPackets[i];
 
           // Generate MACs and sign for a packet //
-          p1.macCalculatorONEPACKET(_topology[path_list[pathIndex][j]].input, key_pool);
-          p1.signCalculatorONEPACKET(_topology[path_list[pathIndex][j]].input, private_key);
+         // p1.macCalculatorONEPACKET(_topology[path_list[pathIndex][j]].input, key_pool);
+          // p1.signCalculatorONEPACKET(_topology[path_list[pathIndex][j]].input, private_key);
           // Append generated MACs and sign to the end of packets
 
           // TO DO : Change appended packet to coded packet
@@ -830,12 +1000,27 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
           double randomValue = dis(gen);
           _topology[path_list[pathIndex][j]].output = zeroVector;
           _topology[path_list[pathIndex][j]].output = _topology[path_list[pathIndex][j]].input;
+          _topology[path_list[pathIndex][j]].attackProbability= attackProbability;
           if (randomValue <= _topology[path_list[pathIndex][j]].attackProbability)
           {
 
-            //_topology[path_list[pathIndex][j]].output = p1.pollutionGenerationONEPACKET(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].pollutedDropped);
+           // _topology[path_list[pathIndex][j]].output = p1.pollutionGenerationONEPACKET(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].pollutedDropped);
             
-            _topology[path_list[pathIndex][j]].output = p1.gf256_gaussian_elimination(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].keySet);
+            _topology[path_list[pathIndex][j]].output = p1.rref(_topology[path_list[pathIndex][j]].keySet,key_pool,_topology[path_list[pathIndex][j]].input);
+
+            
+          //  std::vector<uint8_t> pol_test = p1.rref(_topology[path_list[pathIndex][j]].keySet,key_pool,_topology[path_list[pathIndex][j]].input);
+
+           // bool MacResult_test = p1.macVerifier(_topology[path_list[pathIndex][j]].input, _topology[path_list[pathIndex][j]].keySet,key_pool);
+
+            //MacResult_test = p1.macVerifier(pol_test, _topology[path_list[pathIndex][j]].keySet,key_pool);
+
+            //MacResult_test = p1.macVerifier(pol_test, key_pool,key_pool);
+
+
+
+          //bool SignResult_test = p1.signVerifier(_topology[path_list[pathIndex][j]].input, private_key);
+            //_topology[path_list[pathIndex][j]].output = p1.gf256_gaussian_elimination(_topology[path_list[pathIndex][j]].input,_topology[path_list[pathIndex][j]].keySet);
 
             _topology[path_list[pathIndex][j]].pollutedDropped++;
           //  std::cout << "here";
@@ -856,7 +1041,8 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
           // Add input into the node buffer and increase buffer counter//
           _topology[path_list[pathIndex][j]].nonSourceNodeBuffer[_topology[path_list[pathIndex][j]].buffercounter] = _topology[path_list[pathIndex][j]].input;
           _topology[path_list[pathIndex][j]].buffercounter++;
-
+          
+         // _topology[path_list[pathIndex][j]].keySet=key_pool;
 
 
           if(_topology[path_list[pathIndex][j]].buffercounter == _bufferSize){
@@ -869,14 +1055,30 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
             // AR verifier
             std::vector<int> ar_Results =  p1.arTreeVerifierNEW(generated_tree , _topology[path_list[pathIndex][j]].arVectorForPackets,NumberOfLayers,_topology[path_list[pathIndex][j]].keySet,key_pool,private_key);
             result_vector_arVerifier[generationIndex]= ar_Results;
+
+            outputFile_all_data_ar << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G<< "-"<< "Attack Probability:"<<  attackProbability  
+                << "-"<< "False Positivity AR:" <<  _topology[2].pollutedDropped << "-"<< "Detected Pollution Number" <<  ar_Results[1] << "-"<< "AR Ver Check Number:" <<  ar_Results[0] << std::endl;
+                            outputFile_all_data_ar.flush();
+
+         //   std::cout << "here";
             // Tree Verifier
              std::vector<int> tree_Results = p1.treeVerifierNEW(generated_tree, NumberOfLayers, Number_Of_Leaves,_topology[path_list[pathIndex][j]].keySet,key_pool, private_key);
              result_vector_treeVerifier[generationIndex]= tree_Results;
-             // SImple Verifier
+
+             outputFile_all_data_tree << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G<< "-"<< "Attack Probability:"<<  attackProbability  
+                << "-"<< "False Positivity Tree:" <<  _topology[2].pollutedDropped << "-"<< "Detected Pollution Number" <<  tree_Results[1] << "-"<< "Batch Ver Check Number:" <<  tree_Results[0] << std::endl;
+             outputFile_all_data_tree.flush();
+             
+            // SImple Verifier
              std::vector<int> simple_Result = p1.simpleVerifierNEW(_topology[path_list[pathIndex][j]].nonSourceNodeBuffer, _topology[path_list[pathIndex][j]].keySet,key_pool, private_key);
              result_vector_simpleVerifier[generationIndex]= simple_Result;
+ 
+            //  outputFile_all_data_simple << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G<< "-"<< "Attack Probability:"<<  attackProbability  
+            //     << "-"<< "False Positivity Simple:" <<  _topology[2].pollutedDropped << "-"<< "Detected Pollution Number" <<  simple_Result[1] << "-"<< "Simple Ver Check Number:" <<  simple_Result[0] << std::endl;
+            // outputFile_all_data_simple.flush();
 
-         //    std::cout << "here";
+            
+             //std::cout << "here";
 
           }
 
@@ -935,13 +1137,72 @@ void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descripto
       };
     };
 
-if(generationIndex==_GG-1){
-   std::cout << "here";}
-    
+// if(generationIndex==_GG-1){
+//    std::cout << "here";}
+  polluted_packets[generationIndex]= _topology[2].pollutedDropped;
 
-    
-  };
+  };  // for loop for each generation
+  // ----------------------- AVERAGE VALUE CALCULATION STARTS -------------------------------------------//
+int pol_sum_simple = 0;int pol_sum_tree = 0;int pol_sum_ar = 0;
+int sum_simple = 0;int sum_tree = 0;int sum_ar = 0; double pol =0;
+int counter=0; std::vector<int> sum_key_diff_matrice(_keysetSize+1,0);
+
+for(int ii=0; ii<(_keysetSize+1); ii++){
+for (int jj = 0; jj < key_difference_matrice.size(); jj++)
+{
+  sum_key_diff_matrice[ii]+= key_difference_matrice[jj][ii];
+}}
+
+
+
+for (int i = 0; i < result_vector_simpleVerifier.size(); i++) {
+   if((polluted_packets[i] < result_vector_simpleVerifier[i][1])||  (result_vector_simpleVerifier[i][0]==0)){
+   polluted_packets[i]=0;
+   result_vector_simpleVerifier[i]={0,0};
+   result_vector_treeVerifier[i]={0,0}; 
+   result_vector_arVerifier[i]={0,0}; 
+   counter++;
+            }
+    pol_sum_simple += result_vector_simpleVerifier[i][1]; sum_simple += result_vector_simpleVerifier[i][0];
+    pol_sum_tree += result_vector_treeVerifier[i][1]; sum_tree += result_vector_treeVerifier[i][0]; 
+    pol_sum_ar += result_vector_arVerifier[i][1]; sum_ar += result_vector_arVerifier[i][0];
+    pol += polluted_packets[i];
+}
+double average_simple = static_cast<double>(sum_simple) / (result_vector_simpleVerifier.size()-counter); double pol_average_simple = static_cast<double>(pol_sum_simple) / (result_vector_simpleVerifier.size()-counter);
+double average_tree = static_cast<double>(sum_tree) / (result_vector_simpleVerifier.size()-counter); double pol_average_tree = static_cast<double>(pol_sum_tree) / (result_vector_simpleVerifier.size()-counter);
+double average_ar = static_cast<double>(sum_ar) / (result_vector_simpleVerifier.size()-counter); double pol_average_ar = static_cast<double>(pol_sum_ar) / (result_vector_simpleVerifier.size()-counter);
+double fp_ar = 100*(pol-pol_sum_ar)/ pol;
+double fp_simple = 100*(pol-pol_sum_simple)/ pol;
+double fp_tree = 100*(pol-pol_sum_tree)/ pol;
+std::vector<double> average_key_difference((_keysetSize+1),0); 
+for(int i=0; i<(_keysetSize+1); i++){
+double result=static_cast<double>(sum_key_diff_matrice[i]) / key_difference_matrice.size();
+average_key_difference[i]= 100*result/_G;
 };
+
+
+
+//------------------------ AVERAGE VALUE CALCULATION END ----------------------------------------------//
+    
+    outputFile << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G<< "-"<< "Attack Probability:"<<  attackProbability  
+                << "-"<< "False Positivity Simple:" <<  fp_simple << "-"<< "Pollution Number" <<  pol << "-"<< "Detected Pollution Number" <<  pol_sum_simple << "-"<< "SImple Ver Check Number:" <<  average_simple << std::endl;
+    outputFile << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G<< "-"<< "Attack Probability:" << attackProbability 
+                << "-"<< "False Positivity Tree:" <<  fp_tree<< "-"<< "-"<< "Pollution Number" <<  pol <<"Detected Pollution Number" <<  pol_sum_tree << "-"<< "Tree VerResult:" <<  average_tree << std::endl;
+    outputFile << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G << "-"<< "Attack Probability:" << attackProbability
+               << "-"<< "False Positivity AR:" <<  fp_ar << "-"<< "-"<< "Pollution Number" <<  pol <<"Detected Pollution Number" << pol_sum_ar << "-"<< "AR Tree Ver Result:" <<  average_ar << std::endl;
+    outputFile.flush();
+
+        outputFile << std::endl;
+
+    //}
+    /////////////////////////----------------------------------------------------------------------------////////////////////////////////////////////////////
+       outputFile_key_dist << "PacketSize:" << _packetSize<< "-"<< "BufferSize:" << _G
+                << "-"<< "0 common:" <<    average_key_difference[0] << "-"<< "1 common:" <<    average_key_difference[1]<< "2 common:" <<    average_key_difference[2] 
+       << "-"<< "3 common:" <<    average_key_difference[3]<< "4 common:" <<    average_key_difference[4]           << std::endl;
+     
+        outputFile_key_dist << std::endl;
+    
+};    // closure of algorithm
 
 // void simulation(Graph _topology, std::vector<std::vector<Graph::vertex_descriptor>> path_list, int _GG, int _G, int _fieldSize, int _packetSize, int _keypoolSize, int _keysetSize, int Number_of_Pollution,int _bufferSize)
 

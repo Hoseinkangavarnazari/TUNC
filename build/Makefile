@@ -297,6 +297,30 @@ headers/src/packet.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/packet.cpp.s
 .PHONY : headers/src/packet.cpp.s
 
+headers/src/pff.o: headers/src/pff.cpp.o
+.PHONY : headers/src/pff.o
+
+# target to build an object file
+headers/src/pff.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/pff.cpp.o
+.PHONY : headers/src/pff.cpp.o
+
+headers/src/pff.i: headers/src/pff.cpp.i
+.PHONY : headers/src/pff.i
+
+# target to preprocess a source file
+headers/src/pff.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/pff.cpp.i
+.PHONY : headers/src/pff.cpp.i
+
+headers/src/pff.s: headers/src/pff.cpp.s
+.PHONY : headers/src/pff.s
+
+# target to generate assembly for a file
+headers/src/pff.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/runner.out.dir/build.make CMakeFiles/runner.out.dir/headers/src/pff.cpp.s
+.PHONY : headers/src/pff.cpp.s
+
 headers/src/rlnc_decoder.o: headers/src/rlnc_decoder.cpp.o
 .PHONY : headers/src/rlnc_decoder.o
 
@@ -447,6 +471,9 @@ help:
 	@echo "... headers/src/packet.o"
 	@echo "... headers/src/packet.i"
 	@echo "... headers/src/packet.s"
+	@echo "... headers/src/pff.o"
+	@echo "... headers/src/pff.i"
+	@echo "... headers/src/pff.s"
 	@echo "... headers/src/rlnc_decoder.o"
 	@echo "... headers/src/rlnc_decoder.i"
 	@echo "... headers/src/rlnc_decoder.s"
