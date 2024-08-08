@@ -1,0 +1,4 @@
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Simple:0-Pollution Number34-Detected Pollution Number34-SImple Ver Check Number:16
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:0--Pollution Number34Detected Pollution Number34-Tree VerResult:19.2
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity AR:0--Pollution Number34Detected Pollution Number34-AR Tree Ver Result:11
+

@@ -1,0 +1,10 @@
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:3-Detected Pollution Number3-AR Ver Check Number:7
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:3-Detected Pollution Number3-AR Ver Check Number:8
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:3-Detected Pollution Number3-AR Ver Check Number:10
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:5-Detected Pollution Number5-AR Ver Check Number:11
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:3-Detected Pollution Number3-AR Ver Check Number:7
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:1-Detected Pollution Number1-AR Ver Check Number:6
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:2-Detected Pollution Number2-AR Ver Check Number:5
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:2-Detected Pollution Number2-AR Ver Check Number:5
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:5-Detected Pollution Number5-AR Ver Check Number:12
+PacketSize:127-BufferSize:8-Attack Probability:0.4-False Positivity AR:3-Detected Pollution Number3-AR Ver Check Number:9

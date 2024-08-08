@@ -1,0 +1,4 @@
+PacketSize:127-BufferSize:10-Attack Probability:0.4-False Positivity Tree:4-Detected Pollution Number3-Batch Ver Check Number:14
+PacketSize:127-BufferSize:10-Attack Probability:0.4-False Positivity Tree:2-Detected Pollution Number2-Batch Ver Check Number:10
+PacketSize:127-BufferSize:10-Attack Probability:0.4-False Positivity Tree:2-Detected Pollution Number0-Batch Ver Check Number:1
+PacketSize:127-BufferSize:10-Attack Probability:0.4-False Positivity Tree:2-Detected Pollution Number2-Batch Ver Check Number:12

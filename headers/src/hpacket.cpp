@@ -15,7 +15,8 @@
 #include <cassert>
 
 
-   // ff fff(256);
+
+//    ff fff(256);
     pff fff(127);
 
 
@@ -85,6 +86,32 @@ for(int pcktIndex=0; pcktIndex<h_codedSymbol.size(); pcktIndex++){
 
   // std::cout << "res";
 };};
+
+/////////////////////// HMAC Encoder ////////////////////////////////////
+std::vector<std::vector<uint8_t>> hpacket::hmac_encoder(std::vector<std::vector<uint8_t>> coef_matrice , std::vector<std::vector<uint8_t>>data_matrice ){
+   
+std::vector<std::vector<uint8_t>> rlnc_packets;
+
+   // Perform the multiplication
+    for (int i = 0; i < coef_matrice.size(); i++) {
+        for (int j = 0; j < data_matrice[0].size(); j++) {
+            for (int k = 0; k < coef_matrice[0].size(); k++) {
+                rlnc_packets[i][j] += fff.mutiply(coef_matrice[i][k], data_matrice[k][j]);
+            }
+        }
+    }
+
+    for(int rowIndex=0; rowIndex< coef_matrice.size() ; rowIndex++){
+       rlnc_packets[rowIndex].insert(rlnc_packets[rowIndex].begin(), coef_matrice[rowIndex].begin(), coef_matrice[rowIndex].end());
+  };
+
+return rlnc_packets;
+};
+
+std::vector<std::vector<uint8_t>> hpacket::hmac_decoder(std::vector<std::vector<uint8_t>>data_matrice ){
+
+};
+
 //////////////// MAC Calculator for one packet
 std::vector<uint8_t> hpacket::macCalculatorONEPACKET(std::vector<uint8_t> _current_packet, std::vector<std::vector<uint8_t>> _keypool)
 {
@@ -944,10 +971,10 @@ return fp_result;
 //  int sign_ver_result = (allZero ? 0 : 1);7
 //};8
 
-hpacket::hpacket(std::vector<std::vector<uint8_t>> _codedSymbol, std::vector<std::vector<uint8_t>> _MAC, std::vector<std::vector<uint8_t>> _publicKeySet, std::vector<uint8_t> _privateKey, int _numberofMac,std::vector<uint8_t> _coefficientvector)
+hpacket::hpacket(std::vector<std::vector<uint8_t>> _codedSymbol, std::vector<std::vector<uint8_t>> _MAC, std::vector<std::vector<uint8_t>> _publicKeySet, std::vector<uint8_t> _privateKey, int _numberofMac,std::vector<std::vector<uint8_t>> _coefficientMatrice)
 {
   this->h_codedSymbol = _codedSymbol;
-  this->coefficientVector = _coefficientvector;
+ // this->coefficientVector = _coefficientMatrice;
   this->privateKey = _privateKey;
   this->publickeyset = _publicKeySet;
   this->number_of_mac = _numberofMac;

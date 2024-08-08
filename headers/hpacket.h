@@ -72,7 +72,7 @@ public:
     // std::vector<uint8_t> codedSymbol;
     // int symbolsize;
     // std::vector<uint8_t> CRC;
-    hpacket(std::vector<std::vector<uint8_t>> _codedSymbol, std::vector<std::vector<uint8_t>> _MAC, std::vector<std::vector<uint8_t>> _publickeyset, std::vector<uint8_t> _privateKey, int number_of_mac,std::vector<uint8_t> _coefficientvector);
+    hpacket(std::vector<std::vector<uint8_t>> _codedSymbol, std::vector<std::vector<uint8_t>> _MAC, std::vector<std::vector<uint8_t>> _publickeyset, std::vector<uint8_t> _privateKey, int number_of_mac,std::vector<std::vector<uint8_t>> _coefficientvector);
     void macCalculator();
     std::vector<uint8_t> macCalculatorONEPACKET(std::vector<uint8_t> _current_packet, std::vector<std::vector<uint8_t>> _keypool);
     void signCalculator();
@@ -82,7 +82,8 @@ public:
     bool signVerifier(std::vector<uint8_t> verifiedDataPacket,std::vector<uint8_t> _publicKey);
     void packetCombiner();
     std::vector<std::vector<uint8_t>> packetAppender(std::vector<std::vector<uint8_t>> _h_appendedSymbol);
-    
+    std::vector<std::vector<uint8_t>> hmac_encoder(std::vector<std::vector<uint8_t>> coef_matrice , std::vector<std::vector<uint8_t>>data_matrice );
+    std::vector<std::vector<uint8_t>> hmac_decoder(std::vector<std::vector<uint8_t>>data_matrice );
     uint8_t powerCalculator(uint8_t k ,uint8_t n);
     void multiplyCheck();
     std::vector<std::vector<std::vector<uint8_t>>>  treeGenerator(std::vector<std::vector<uint8_t>> received_packets_list, int _numberOfLayers,int leaves, int _packetSize);

@@ -1,0 +1,10 @@
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:3-Detected Pollution Number3-Batch Ver Check Number:20
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:6-Detected Pollution Number6-Batch Ver Check Number:22
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:3-Detected Pollution Number3-Batch Ver Check Number:20
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:4-Detected Pollution Number4-Batch Ver Check Number:20
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:4-Detected Pollution Number4-Batch Ver Check Number:20
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:3-Detected Pollution Number3-Batch Ver Check Number:18
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:1-Detected Pollution Number1-Batch Ver Check Number:10
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:5-Detected Pollution Number5-Batch Ver Check Number:26
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:3-Detected Pollution Number3-Batch Ver Check Number:20
+PacketSize:127-BufferSize:16-Attack Probability:0.4-False Positivity Tree:2-Detected Pollution Number2-Batch Ver Check Number:16

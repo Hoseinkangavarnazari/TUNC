@@ -1,0 +1,12 @@
+PacketSize:0-BufferSize:0-0 common:-nan-1 common:-nan2 common:-nan-3 common:-nan4 common:-nan
+
+PacketSize:127-BufferSize:5-0 common:68-1 common:262 common:6-3 common:04 common:0
+
+PacketSize:127-BufferSize:8-0 common:67.5-1 common:302 common:2.5-3 common:04 common:0
+
+PacketSize:127-BufferSize:8-0 common:71.25-1 common:26.252 common:2.5-3 common:04 common:0
+
+PacketSize:127-BufferSize:8-0 common:72.5-1 common:252 common:2.5-3 common:04 common:0
+
+PacketSize:127-BufferSize:16-0 common:67.5-1 common:27.52 common:4.375-3 common:0.6254 common:0
+
